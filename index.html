@@ -27,7 +27,38 @@
     box-shadow: 0 2px 8px rgba(0,0,0,.2);
   }
   .header-title { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
-  .header-meta { margin-left: auto; color: rgba(255,255,255,.55); font-size: 11px; }
+  .header-meta { color: rgba(255,255,255,.55); font-size: 11px; }
+
+  /* ── Role Switcher ── */
+  .role-switcher { margin-left: auto; display: flex; align-items: center; gap: 4px; margin-right: 14px; }
+  .role-btn {
+    font-size: 11px; padding: 3px 11px; border-radius: 20px;
+    border: 1px solid rgba(255,255,255,.22); color: rgba(255,255,255,.6);
+    background: rgba(255,255,255,.07); cursor: pointer;
+    transition: all .15s; white-space: nowrap; font-family: inherit;
+  }
+  .role-btn:hover { background: rgba(255,255,255,.14); color: #fff; }
+  .role-btn.active { background: rgba(255,255,255,.2); color: #fff; border-color: rgba(255,255,255,.5); font-weight: 600; }
+
+  /* ── Role-based visibility ── */
+  body[data-role="member"] #btn-add,
+  body[data-role="member"] #btn-import,
+  body[data-role="viewer"] #btn-add,
+  body[data-role="viewer"] #btn-import { display: none !important; }
+
+  body[data-role="member"] .btn-edit,
+  body[data-role="member"] .btn-delete,
+  body[data-role="member"] .row-checkbox,
+  body[data-role="member"] #bulk-bar,
+  body[data-role="viewer"] .btn-edit,
+  body[data-role="viewer"] .btn-delete,
+  body[data-role="viewer"] .row-checkbox,
+  body[data-role="viewer"] #bulk-bar { display: none !important; }
+
+  body[data-role="member"] .status-select,
+  body[data-role="viewer"] .status-select { pointer-events: none !important; opacity: .85; }
+
+  body[data-role="viewer"] #filter-panel { display: none !important; }
 
   /* ── Layout ── */
   .layout { display: flex; margin-top: var(--header-h); min-height: calc(100vh - var(--header-h)); }
@@ -473,6 +504,11 @@
 
 <header class="page-header">
   <span class="header-title">技术中台 · 周进度报告</span>
+  <div class="role-switcher">
+    <button class="role-btn active" data-role="admin" onclick="switchRole('admin')">管理员</button>
+    <button class="role-btn" data-role="member" onclick="switchRole('member')">项目组成员</button>
+    <button class="role-btn" data-role="viewer" onclick="switchRole('viewer')">普通成员</button>
+  </div>
   <span class="header-meta">生成于 2026/4/3 18:42:12</span>
 </header>
 
@@ -3867,6 +3903,16 @@ document.getElementById("import-confirm-btn").addEventListener("click", () => {
   closeImportModal();
   applyFilter();
 });
+
+// ── 角色权限管理 ──
+function switchRole(role) {
+  document.body.dataset.role = role;
+  document.querySelectorAll(".role-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.role === role);
+  });
+}
+// 初始化角色为管理员
+document.body.dataset.role = "admin";
 </script>
 </body>
 </html>
