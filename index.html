@@ -1,0 +1,3872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>技术中台 · 周进度报告</title>
+<style>
+  :root {
+    --bg: #f0f2f7; --card: #ffffff; --border: #e4e7ed;
+    --primary: #2B5CE6; --primary-light: #eff3ff;
+    --sidebar-bg: #1e2533; --sidebar-hover: #2a3245;
+    --sidebar-active: #2B5CE6;
+    --text-primary: #1a1d23; --text-secondary: #6b7280; --text-muted: #9ca3af;
+    --sidebar-w: 220px; --header-h: 52px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+         background: var(--bg); color: var(--text-primary);
+         display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* ── Header ── */
+  .page-header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: var(--header-h);
+    background: linear-gradient(90deg, #1a2d6d 0%, #2B5CE6 100%);
+    display: flex; align-items: center; padding: 0 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  .header-title { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
+  .header-meta { margin-left: auto; color: rgba(255,255,255,.55); font-size: 11px; }
+
+  /* ── Layout ── */
+  .layout { display: flex; margin-top: var(--header-h); min-height: calc(100vh - var(--header-h)); }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-w); flex-shrink: 0;
+    background: var(--sidebar-bg);
+    position: fixed; top: var(--header-h); bottom: 0; left: 0;
+    overflow-y: auto; padding: 16px 0 24px;
+    border-right: 1px solid rgba(255,255,255,.05);
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 2px; }
+  .sidebar-label {
+    font-size: 12px; color: rgba(255,255,255,.4); letter-spacing: 1px;
+    padding: 12px 16px 6px; font-weight: 600;
+  }
+  .sidebar-home-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px 12px; cursor: pointer; color: rgba(255,255,255,.5);
+    font-size: 12px; border: none; background: none; width: 100%;
+    transition: color .15s;
+  }
+  .sidebar-home-btn:hover { color: rgba(255,255,255,.9); }
+  .sidebar-home-btn.active { color: #fff; }
+  .sidebar-home-btn svg { flex-shrink: 0; }
+  /* Studio row */
+  .nav-studio {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 14px; cursor: pointer;
+    color: rgba(255,255,255,.7); font-size: 13px;
+    user-select: none; transition: background .15s, color .15s;
+    border-radius: 6px; margin: 1px 6px;
+  }
+  .nav-studio:hover { background: rgba(255,255,255,.07); color: #fff; }
+  .nav-studio.active { background: rgba(43,92,230,.25); color: #fff; }
+  .nav-studio-icon {
+    width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; opacity: .9;
+  }
+  .nav-studio-name { flex: 1; font-weight: 500; line-height: 1.3; }
+  .nav-studio-meta { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+  .nav-count {
+    font-size: 11px; color: rgba(255,255,255,.3);
+    background: rgba(255,255,255,.08); padding: 1px 6px;
+    border-radius: 10px; line-height: 1.6;
+  }
+  .nav-arrow {
+    width: 10px; height: 10px; color: rgba(255,255,255,.3);
+    transition: transform .2s; flex-shrink: 0;
+  }
+  .nav-studio-group.open .nav-arrow { transform: rotate(90deg); }
+  /* Games list */
+  .nav-games { list-style: none; display: none; margin: 2px 0 4px; }
+  .nav-studio-group.open .nav-games { display: block; }
+  .nav-game {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 14px 6px 20px; cursor: pointer;
+    color: rgba(255,255,255,.42); font-size: 12px;
+    transition: background .12s, color .12s;
+    border-radius: 5px; margin: 1px 6px;
+  }
+  .nav-game:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.75); }
+  .nav-game.active { background: rgba(43,92,230,.2); color: #7eb3ff; }
+  .nav-game-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: rgba(255,255,255,.2); flex-shrink: 0;
+    transition: background .12s;
+  }
+  .nav-game.active .nav-game-dot { background: #7eb3ff; }
+  .nav-game-name { flex: 1; line-height: 1.4; }
+  .nav-game-count {
+    font-size: 10px; color: rgba(255,255,255,.2);
+    background: rgba(255,255,255,.07); padding: 1px 5px;
+    border-radius: 8px; flex-shrink: 0;
+  }
+  .nav-game.active .nav-game-count { color: rgba(126,179,255,.7); background: rgba(43,92,230,.2); }
+
+  /* ── Content ── */
+  .content {
+    margin-left: var(--sidebar-w);
+    flex: 1; padding: 20px 24px 48px;
+    min-width: 0;
+  }
+
+  /* ── Filter Bar ── */
+  .filter-panel {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px 12px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .filter-panel-top {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  }
+  .filter-panel-title {
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;
+  }
+  .filter-panel-title svg { color: var(--primary); }
+  .filter-bar {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-label {
+    font-size: 11px; color: var(--text-muted); font-weight: 500;
+    white-space: nowrap; padding-left: 2px;
+  }
+  .filter-select {
+    border: 1.5px solid var(--border); border-radius: 7px;
+    padding: 6px 28px 6px 10px; font-size: 13px;
+    background: #f8f9ff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239ca3af'/%3E%3C/svg%3E") no-repeat right 10px center;
+    appearance: none; cursor: pointer; color: var(--text-primary);
+    min-width: 130px; max-width: 190px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(43,92,230,.1); }
+  .filter-select.has-value { border-color: var(--primary); background-color: var(--primary-light); color: var(--primary); font-weight: 500; }
+  /* 搜索框 */
+  .search-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 200px; max-width: 340px; }
+  .search-wrap { position: relative; }
+  .search-wrap svg { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+  .filter-search {
+    width: 100%; border: 1.5px solid var(--border); border-radius: 7px;
+    padding: 6px 10px 6px 30px; font-size: 13px;
+    background: #f8f9ff; color: var(--text-primary);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .filter-search::placeholder { color: var(--text-muted); }
+  .filter-search:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(43,92,230,.1); }
+  /* 底部操作行 */
+  .filter-actions {
+    display: flex; align-items: center; gap: 8px; margin-top: 10px;
+    padding-top: 10px; border-top: 1px solid var(--border);
+  }
+  .filter-reset {
+    padding: 5px 14px; border: 1.5px solid var(--border); border-radius: 7px;
+    background: var(--card); font-size: 12px; cursor: pointer;
+    color: var(--text-secondary); transition: all .15s; font-weight: 500;
+  }
+  .filter-reset:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .result-count {
+    margin-left: auto; font-size: 12px; color: var(--text-muted);
+    background: var(--bg); padding: 3px 10px; border-radius: 20px;
+    font-weight: 500;
+  }
+  .active-filters { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+  /* ── Person Section ── */
+  .person-section { margin-bottom: 16px; }
+  .person-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 14px; background: linear-gradient(90deg,#f0f4ff,#f8f9ff);
+    border-radius: 10px 10px 0 0; border: 1px solid var(--border); border-bottom: none;
+  }
+  .person-identity { display: flex; align-items: center; gap: 9px; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+  .avatar-fallback {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  .person-name { font-size: 13px; font-weight: 600; }
+  .person-count { font-size: 11px; color: var(--text-muted);
+    background: rgba(43,92,230,.1); color: var(--primary); padding: 1px 8px; border-radius: 20px; font-weight: 500; }
+
+  /* ── Table Layout ── */
+  .task-list { border: 1px solid var(--border); border-radius: 0 0 10px 10px;
+    background: var(--card); overflow-x: auto; }
+  .task-table { width: 100%; min-width: 1100px; border-collapse: collapse; font-size: 12.5px; table-layout: fixed; }
+  .task-table th {
+    background: #f4f6fb; font-size: 11px; font-weight: 600;
+    color: var(--text-muted); padding: 7px 8px; text-align: left;
+    border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden;
+  }
+  .task-table td {
+    padding: 9px 8px; border-bottom: 1px solid #f0f1f5;
+    vertical-align: top; color: var(--text-secondary); line-height: 1.6; overflow: hidden;
+  }
+  .task-table tr:last-child td { border-bottom: none; }
+  .task-table tr:hover td { background: #f8f9ff; }
+  /* 固定列宽，参考设计图 */
+  .task-table .col-check       { width: 32px;  padding: 9px 6px; text-align: center; vertical-align: middle; }
+  .task-table .col-task        { width: 340px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .task-table .col-status      { width: 108px; text-align: center; vertical-align: middle; }
+  .task-table .col-update      { /* 剩余空间自动分配 */ }
+  .task-table .col-update-date { width: 128px; vertical-align: middle; }
+  .task-table .col-date        { width: 112px; white-space: nowrap; vertical-align: middle; }
+  .task-table .col-anomaly     { width: 90px;  vertical-align: middle; }
+  .task-table .col-action      { width: 64px;  text-align: center; vertical-align: middle; white-space: nowrap; }
+  .task-table th.col-check     { padding: 7px 6px; }
+  .task-link  { color: var(--primary); text-decoration: none; font-weight: 500; }
+  .task-link:hover { text-decoration: underline; }
+  .task-no-link { color: var(--text-primary); font-weight: 500; }
+  .anomaly-warn { color: #dc2626; font-weight: 500; }
+  .anomaly-short { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; word-break: break-all; }
+  .btn-anomaly-detail { border: none; background: none; color: var(--primary); font-size: 11px; cursor: pointer; padding: 0; display: block; margin-top: 2px; }
+  .btn-anomaly-detail:hover { text-decoration: underline; }
+  /* 异常详情弹出框 */
+  #anomaly-popup { display: none; position: fixed; z-index: 9999; background: #fff;
+    border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.15);
+    padding: 12px 14px; max-width: 320px; font-size: 12px; color: var(--text-secondary);
+    line-height: 1.7; word-break: break-all; }
+  #anomaly-popup.open { display: block; }
+
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px;
+    font-weight: 500; white-space: nowrap; flex-shrink: 0; }
+  .status-online    { background: #d1fae5; color: #065f46; }
+  .status-ongoing   { background: #dbeafe; color: #1e40af; }
+  .status-pending   { background: #fef3c7; color: #92400e; }
+  .status-done      { background: #d1fae5; color: #065f46; }
+  .status-scheduled { background: #ede9fe; color: #5b21b6; }
+  .status-other     { background: #f3f4f6; color: #374151; }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 14px; }
+
+  @media (max-width: 680px) {
+    .sidebar { display: none; }
+    .content { margin-left: 0; }
+    .field-row { flex-direction: column; gap: 5px; }
+  }
+
+  /* ── Edit Modal ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,.45); align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 14px; width: 620px; max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 60px); display: flex; flex-direction: column;
+    box-shadow: 0 12px 40px rgba(0,0,0,.2);
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px 14px; border-bottom: 1px solid var(--border);
+  }
+  .modal-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .modal-close {
+    width: 28px; height: 28px; border-radius: 6px; border: none;
+    background: transparent; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; color: var(--text-muted); transition: background .15s;
+  }
+  .modal-close:hover { background: var(--bg); color: var(--text-primary); }
+  .modal-body { padding: 18px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+  .modal-field { display: flex; flex-direction: column; gap: 5px; }
+  .modal-field label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+  .required-hint { display: none; margin-left: 4px; color: #dc2626; font-weight: 500; font-size: 11px; }
+  .modal.new-mode .required-hint { display: inline; }
+  .modal.new-mode .required-input { border-color: #fca5a5 !important; }
+  .modal.new-mode .required-input:focus { border-color: #dc2626 !important; box-shadow: 0 0 0 2px rgba(220,38,38,.1) !important; }
+  .modal-input, .modal-textarea, .modal-select {
+    border: 1.5px solid var(--border); border-radius: 7px;
+    padding: 7px 10px; font-size: 13px; color: var(--text-primary);
+    font-family: inherit; background: #f8f9ff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .modal-input:focus, .modal-textarea:focus, .modal-select:focus {
+    outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(43,92,230,.1);
+    background: #fff;
+  }
+  .modal-textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  .modal-row { display: flex; gap: 12px; }
+  .modal-row .modal-field { flex: 1; }
+  .modal-footer {
+    padding: 12px 20px 16px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 8px;
+  }
+  .btn-cancel {
+    padding: 7px 18px; border: 1.5px solid var(--border); border-radius: 7px;
+    background: var(--card); font-size: 13px; cursor: pointer;
+    color: var(--text-secondary); transition: all .15s;
+  }
+  .btn-cancel:hover { border-color: #9ca3af; color: var(--text-primary); }
+  .btn-save {
+    padding: 7px 20px; border: none; border-radius: 7px;
+    background: var(--primary); font-size: 13px; cursor: pointer;
+    color: #fff; font-weight: 600; transition: background .15s;
+  }
+  .btn-save:hover { background: #1a4bc4; }
+  /* 行内编辑按钮 */
+  .col-action { width: 36px; text-align: center; }
+  .btn-edit {
+    width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--border);
+    background: transparent; cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center; color: var(--text-muted);
+    transition: all .15s;
+  }
+  .btn-edit:hover { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+  /* 删除按钮 */
+  .btn-delete {
+    width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--border);
+    background: transparent; cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center; color: var(--text-muted);
+    transition: all .15s;
+  }
+  .btn-delete:hover { background: #fee2e2; border-color: #ef4444; color: #ef4444; }
+  .col-action { width: 60px; text-align: center; white-space: nowrap; }
+  /* 复选框列 */
+  .col-check { width: 32px; text-align: center; }
+  .row-checkbox { width: 14px; height: 14px; cursor: pointer; accent-color: var(--primary); }
+  /* 批量操作浮动栏 */
+  .bulk-bar {
+    display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1e2533; color: #fff; border-radius: 10px; padding: 10px 20px;
+    align-items: center; gap: 16px; z-index: 150; box-shadow: 0 6px 24px rgba(0,0,0,.3);
+    font-size: 13px; white-space: nowrap;
+  }
+  .bulk-bar.visible { display: flex; }
+  .bulk-bar-count { font-weight: 600; }
+  .bulk-bar-count span { color: #60a5fa; }
+  .btn-bulk-delete {
+    padding: 5px 14px; border: none; border-radius: 7px;
+    background: #ef4444; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-bulk-delete:hover { background: #dc2626; }
+  .btn-bulk-cancel {
+    padding: 5px 14px; border: 1px solid rgba(255,255,255,.25); border-radius: 7px;
+    background: transparent; color: rgba(255,255,255,.8); font-size: 12px; cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-bulk-cancel:hover { border-color: #fff; color: #fff; }
+  /* 进度更新时间行内输入 */
+  .col-update-date { width: 120px; }
+  .inline-date {
+    border: 1px solid transparent; border-radius: 5px; padding: 3px 4px;
+    font-size: 11.5px; color: var(--text-secondary); background: transparent;
+    cursor: pointer; width: 100%; max-width: 108px; transition: all .15s;
+  }
+  .inline-date:hover { border-color: var(--border); background: var(--bg); }
+  .inline-date:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 2px rgba(43,92,230,.1); }
+  .inline-date::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
+  /* summary 工作室/游戏层级 */
+  .summary-studio { border-bottom: 1px solid var(--border); }
+  .summary-studio:last-child { border-bottom: none; }
+  .summary-studio-hd {
+    padding: 8px 16px; font-size: 12px; font-weight: 700;
+    color: var(--text-primary); background: #f0f4ff;
+    border-bottom: 1px solid var(--border); letter-spacing: 0.3px;
+  }
+  .summary-game { border-bottom: 1px solid #f0f1f5; }
+  .summary-game:last-child { border-bottom: none; }
+  .summary-game-hd {
+    padding: 6px 16px 6px 24px; font-size: 11.5px; font-weight: 600;
+    color: var(--text-secondary); background: #fafbfc;
+    border-bottom: 1px solid #f0f1f5; display: flex; align-items: center; gap: 6px;
+  }
+  .summary-game-hd::before {
+    content: ""; width: 4px; height: 4px; border-radius: 50%;
+    background: var(--primary); flex-shrink: 0;
+  }
+  .summary-group { padding: 0; }
+  .summary-group-hd { padding: 5px 16px 5px 32px; background: transparent; }
+  .summary-table td { padding: 6px 16px 6px 32px; }
+  .week-summary {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; margin-bottom: 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06); overflow: hidden;
+  }
+  .summary-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg,#f0f4ff,#f8f9ff);
+    cursor: pointer; user-select: none;
+  }
+  .summary-header-left { display: flex; align-items: center; gap: 8px; }
+  .summary-header-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+  .summary-total { font-size: 11px; color: var(--primary); background: var(--primary-light); padding: 1px 8px; border-radius: 20px; font-weight: 500; }
+  .summary-toggle { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+  .summary-toggle svg { transition: transform .2s; }
+  .week-summary.collapsed .summary-toggle svg { transform: rotate(-90deg); }
+  .summary-body { padding: 0; }
+  .week-summary.collapsed .summary-body { display: none; }
+  .summary-group { border-bottom: 1px solid var(--border); }
+  .summary-group:last-child { border-bottom: none; }
+  .summary-group-hd {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 16px; font-size: 12px; font-weight: 600;
+    background: #fafbfc;
+  }
+  .summary-group-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .summary-group-name { flex: 1; }
+  .summary-group-cnt { font-size: 11px; color: var(--text-muted); }
+  .summary-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+  .summary-table td { padding: 7px 16px; border-bottom: 1px solid #f4f5f8; vertical-align: top; color: var(--text-secondary); line-height: 1.5; overflow: hidden; }
+  .summary-table tr:last-child td { border-bottom: none; }
+  .summary-table tr:hover td { background: #f8f9ff; }
+  .summary-table .s-col-task { width: 340px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .summary-table .s-col-status { width: 80px; text-align: center; vertical-align: middle; }
+  .summary-table .s-col-update { color: var(--text-muted); white-space: normal; word-break: break-all; }
+  .s-update-text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* ── 行内状态下拉 ── */
+  .status-select {
+    width: 100%; border: none; border-radius: 20px; font-size: 11px; font-weight: 500;
+    padding: 2px 22px 2px 8px; appearance: none; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23888'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 6px center;
+    transition: opacity .15s;
+  }
+  .status-select:hover { opacity: .85; }
+  .status-select:focus { outline: none; }
+  .status-select.s-online    { background-color: #d1fae5; color: #065f46; }
+  .status-select.s-ongoing   { background-color: #dbeafe; color: #1e40af; }
+  .status-select.s-pending   { background-color: #fef3c7; color: #92400e; }
+  .status-select.s-done      { background-color: #d1fae5; color: #065f46; }
+  .status-select.s-scheduled { background-color: #ede9fe; color: #5b21b6; }
+  .status-select.s-stalled   { background-color: #fee2e2; color: #991b1b; }
+  .status-select.s-other     { background-color: #f3f4f6; color: #374151; }
+
+  /* ── 操作按钮 ── */
+  .btn-primary-sm {
+    padding: 5px 13px; border: none; border-radius: 7px;
+    background: var(--primary); font-size: 12px; cursor: pointer;
+    color: #fff; font-weight: 600; transition: background .15s;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn-primary-sm:hover { background: #1a4bc4; }
+  .btn-secondary-sm {
+    padding: 5px 13px; border: 1.5px solid var(--border); border-radius: 7px;
+    background: var(--card); font-size: 12px; cursor: pointer;
+    color: var(--text-secondary); font-weight: 500; transition: all .15s;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn-secondary-sm:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* 状态 select 在 modal 内的颜色 */
+  .modal-select.s-online    { background-color: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+  .modal-select.s-ongoing   { background-color: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+  .modal-select.s-pending   { background-color: #fef3c7; color: #92400e; border-color: #fcd34d; }
+  .modal-select.s-done      { background-color: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+  .modal-select.s-scheduled { background-color: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+  .modal-select.s-stalled   { background-color: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+  .modal-select.s-other     { background-color: #f3f4f6; color: #374151; border-color: var(--border); }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <span class="header-title">技术中台 · 周进度报告</span>
+  <span class="header-meta">生成于 2026/4/3 18:42:12</span>
+</header>
+
+<div class="layout">
+  <!-- 左侧导航 -->
+  <nav class="sidebar">
+    <button class="sidebar-home-btn" id="sidebar-home-btn" title="全部工作室本周动态">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      </svg>
+      全部工作室·本周动态
+    </button>
+    <button class="sidebar-home-btn" id="sidebar-my-btn" title="个人工作台">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      个人工作台
+    </button>
+    <div class="sidebar-label">工作室</div>
+    
+    <div class="nav-studio-group">
+      <div class="nav-studio" data-studio="摘星工作室">
+        <span class="nav-studio-icon" style="background:#6366f1">摘</span>
+        <span class="nav-studio-name">摘星工作室</span>
+        <span class="nav-studio-meta">
+          <span class="nav-count">40</span>
+          <svg class="nav-arrow" viewBox="0 0 10 10" fill="none">
+            <path d="M3 2l4 3-4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+      <ul class="nav-games"><li class="nav-game" data-studio="摘星工作室" data-game="问道手游">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">问道手游</span>
+        <span class="nav-game-count">11</span>
+      </li><li class="nav-game" data-studio="摘星工作室" data-game="掌上问道">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">掌上问道</span>
+        <span class="nav-game-count">5</span>
+      </li><li class="nav-game" data-studio="摘星工作室" data-game="聚宝斋">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">聚宝斋</span>
+        <span class="nav-game-count">5</span>
+      </li><li class="nav-game" data-studio="摘星工作室" data-game="杖剑传说（国内&海外）">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">杖剑传说（国内&海外）</span>
+        <span class="nav-game-count">8</span>
+      </li><li class="nav-game" data-studio="摘星工作室" data-game="道友来挖宝">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">道友来挖宝</span>
+        <span class="nav-game-count">8</span>
+      </li><li class="nav-game" data-studio="摘星工作室" data-game="封神幻想世界">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">封神幻想世界</span>
+        <span class="nav-game-count">3</span>
+      </li></ul>
+    </div>
+
+    <div class="nav-studio-group">
+      <div class="nav-studio" data-studio="不二工作室">
+        <span class="nav-studio-icon" style="background:#0ea5e9">不</span>
+        <span class="nav-studio-name">不二工作室</span>
+        <span class="nav-studio-meta">
+          <span class="nav-count">14</span>
+          <svg class="nav-arrow" viewBox="0 0 10 10" fill="none">
+            <path d="M3 2l4 3-4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+      <ul class="nav-games"><li class="nav-game" data-studio="不二工作室" data-game="问剑长生（国内&海外）">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">问剑长生（国内&海外）</span>
+        <span class="nav-game-count">3</span>
+      </li><li class="nav-game" data-studio="不二工作室" data-game="九牧之野">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">九牧之野</span>
+        <span class="nav-game-count">6</span>
+      </li><li class="nav-game" data-studio="不二工作室" data-game="一念逍遥（国内&海外）">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">一念逍遥（国内&海外）</span>
+        <span class="nav-game-count">5</span>
+      </li></ul>
+    </div>
+
+    <div class="nav-studio-group">
+      <div class="nav-studio" data-studio="INJOY工作室">
+        <span class="nav-studio-icon" style="background:#10b981">I</span>
+        <span class="nav-studio-name">INJOY工作室</span>
+        <span class="nav-studio-meta">
+          <span class="nav-count">5</span>
+          <svg class="nav-arrow" viewBox="0 0 10 10" fill="none">
+            <path d="M3 2l4 3-4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+      <ul class="nav-games"><li class="nav-game" data-studio="INJOY工作室" data-game="杖剑传说（海外）">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">杖剑传说（海外）</span>
+        <span class="nav-game-count">3</span>
+      </li><li class="nav-game" data-studio="INJOY工作室" data-game="石油大亨（国内&海外）">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">石油大亨（国内&海外）</span>
+        <span class="nav-game-count">2</span>
+      </li></ul>
+    </div>
+
+    <div class="nav-studio-group">
+      <div class="nav-studio" data-studio="三重奏工作室">
+        <span class="nav-studio-icon" style="background:#f59e0b">三</span>
+        <span class="nav-studio-name">三重奏工作室</span>
+        <span class="nav-studio-meta">
+          <span class="nav-count">3</span>
+          <svg class="nav-arrow" viewBox="0 0 10 10" fill="none">
+            <path d="M3 2l4 3-4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+      <ul class="nav-games"><li class="nav-game" data-studio="三重奏工作室" data-game="出动吧！库鲁">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">出动吧！库鲁</span>
+        <span class="nav-game-count">1</span>
+      </li><li class="nav-game" data-studio="三重奏工作室" data-game="奥比岛">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">奥比岛</span>
+        <span class="nav-game-count">2</span>
+      </li></ul>
+    </div>
+
+    <div class="nav-studio-group">
+      <div class="nav-studio" data-studio="吉趣社">
+        <span class="nav-studio-icon" style="background:#ef4444">吉</span>
+        <span class="nav-studio-name">吉趣社</span>
+        <span class="nav-studio-meta">
+          <span class="nav-count">1</span>
+          <svg class="nav-arrow" viewBox="0 0 10 10" fill="none">
+            <path d="M3 2l4 3-4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+      <ul class="nav-games"><li class="nav-game" data-studio="吉趣社" data-game="技术基建-国内（外部需求）">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">技术基建-国内（外部需求）</span>
+        <span class="nav-game-count">1</span>
+      </li></ul>
+    </div>
+
+    <div class="nav-studio-group">
+      <div class="nav-studio" data-studio="技术中台基建类需求">
+        <span class="nav-studio-icon" style="background:#8b5cf6">技</span>
+        <span class="nav-studio-name">技术中台基建类需求</span>
+        <span class="nav-studio-meta">
+          <span class="nav-count">75</span>
+          <svg class="nav-arrow" viewBox="0 0 10 10" fill="none">
+            <path d="M3 2l4 3-4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+      <ul class="nav-games"><li class="nav-game" data-studio="技术中台基建类需求" data-game="技术基建-国内（外部需求）">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">技术基建-国内（外部需求）</span>
+        <span class="nav-game-count">32</span>
+      </li><li class="nav-game" data-studio="技术中台基建类需求" data-game="技术基建-国内（內部需求）">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">技术基建-国内（內部需求）</span>
+        <span class="nav-game-count">27</span>
+      </li><li class="nav-game" data-studio="技术中台基建类需求" data-game="技术基建-海外（外部需求）">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">技术基建-海外（外部需求）</span>
+        <span class="nav-game-count">11</span>
+      </li><li class="nav-game" data-studio="技术中台基建类需求" data-game="技术基建-海外（内部需求）">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">技术基建-海外（内部需求）</span>
+        <span class="nav-game-count">5</span>
+      </li></ul>
+    </div>
+
+    <div class="nav-studio-group">
+      <div class="nav-studio" data-studio="用增需求">
+        <span class="nav-studio-icon" style="background:#ec4899">用</span>
+        <span class="nav-studio-name">用增需求</span>
+        <span class="nav-studio-meta">
+          <span class="nav-count">25</span>
+          <svg class="nav-arrow" viewBox="0 0 10 10" fill="none">
+            <path d="M3 2l4 3-4 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+      <ul class="nav-games"><li class="nav-game" data-studio="用增需求" data-game="用增-国内">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">用增-国内</span>
+        <span class="nav-game-count">17</span>
+      </li><li class="nav-game" data-studio="用增需求" data-game="用增-海外">
+        <span class="nav-game-dot"></span>
+        <span class="nav-game-name">用增-海外</span>
+        <span class="nav-game-count">8</span>
+      </li></ul>
+    </div>
+  </nav>
+
+  <!-- 主内容 -->
+  <main class="content">
+    <!-- 本周动态 -->
+    <div class="week-summary" id="week-summary">
+      <div class="summary-header" id="summary-toggle">
+        <div class="summary-header-left">
+          <span class="summary-header-title">本周动态</span>
+          <span class="summary-total" id="summary-total">0 条</span>
+        </div>
+        <span class="summary-toggle">
+          收起
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3l3 4 3-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+      <div class="summary-body" id="summary-body"></div>
+    </div>
+
+    <!-- 筛选面板 -->
+    <div class="filter-panel" id="filter-panel">
+      <div class="filter-panel-top">
+        <span class="filter-panel-title">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M5 8h6M7 12h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          筛选条件
+        </span>
+      </div>
+      <div class="filter-bar">
+        <div class="filter-group">
+          <span class="filter-label">工作室</span>
+          <select class="filter-select" id="f-studio">
+            <option value="">全部工作室</option><option value="摘星工作室">摘星工作室</option><option value="不二工作室">不二工作室</option><option value="INJOY工作室">INJOY工作室</option><option value="三重奏工作室">三重奏工作室</option><option value="吉趣社">吉趣社</option><option value="技术中台基建类需求">技术中台基建类需求</option><option value="用增需求">用增需求</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">游戏 / 项目</span>
+          <select class="filter-select" id="f-game">
+            <option value="">全部游戏</option><option value="问道手游">问道手游</option><option value="掌上问道">掌上问道</option><option value="聚宝斋">聚宝斋</option><option value="杖剑传说（国内&海外）">杖剑传说（国内&海外）</option><option value="道友来挖宝">道友来挖宝</option><option value="封神幻想世界">封神幻想世界</option><option value="问剑长生（国内&海外）">问剑长生（国内&海外）</option><option value="九牧之野">九牧之野</option><option value="一念逍遥（国内&海外）">一念逍遥（国内&海外）</option><option value="杖剑传说（海外）">杖剑传说（海外）</option><option value="石油大亨（国内&海外）">石油大亨（国内&海外）</option><option value="出动吧！库鲁">出动吧！库鲁</option><option value="奥比岛">奥比岛</option><option value="技术基建-国内（外部需求）">技术基建-国内（外部需求）</option><option value="技术基建-国内（內部需求）">技术基建-国内（內部需求）</option><option value="技术基建-海外（外部需求）">技术基建-海外（外部需求）</option><option value="技术基建-海外（内部需求）">技术基建-海外（内部需求）</option><option value="用增-国内">用增-国内</option><option value="用增-海外">用增-海外</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">提单人</span>
+          <select class="filter-select" id="f-submitter">
+            <option value="">全部提单人</option><option value="91-肖文琛">91-肖文琛</option><option value="蔡宸浩">蔡宸浩</option><option value="曹鹏">曹鹏</option><option value="曾文森">曾文森</option><option value="陈洁">陈洁</option><option value="陈禄发">陈禄发</option><option value="杜婕">杜婕</option><option value="段旭">段旭</option><option value="范洁敏">范洁敏</option><option value="方涛">方涛</option><option value="冯晓阳">冯晓阳</option><option value="高志威">高志威</option><option value="郭婉菁">郭婉菁</option><option value="侯钦瀚">侯钦瀚</option><option value="胡诗情">胡诗情</option><option value="黄天赐">黄天赐</option><option value="李文政">李文政</option><option value="李宣敬">李宣敬</option><option value="李逸欢">李逸欢</option><option value="林丽娟">林丽娟</option><option value="林庆钿">林庆钿</option><option value="林雪">林雪</option><option value="林志伟">林志伟</option><option value="刘阳">刘阳</option><option value="刘宇航">刘宇航</option><option value="聂小慧">聂小慧</option><option value="潘虹余">潘虹余</option><option value="彭思源">彭思源</option><option value="彭鑫尧">彭鑫尧</option><option value="钱智强">钱智强</option><option value="邱单娜">邱单娜</option><option value="提单人">提单人</option><option value="兔力-陈勉">兔力-陈勉</option><option value="汪博">汪博</option><option value="王俊杰">王俊杰</option><option value="王统军">王统军</option><option value="王哲">王哲</option><option value="魏于博">魏于博</option><option value="温敏怡">温敏怡</option><option value="肖长发">肖长发</option><option value="谢誉瑾">谢誉瑾</option><option value="徐浩">徐浩</option><option value="徐梓健">徐梓健</option><option value="杨晓婕">杨晓婕</option><option value="喻泽远">喻泽远</option><option value="张世鑫">张世鑫</option><option value="郑龙">郑龙</option><option value="郑少鹏">郑少鹏</option><option value="钟超平">钟超平</option><option value="卓超">卓超</option><option value="卓奕敏">卓奕敏</option><option value="邹志鹏">邹志鹏</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">状态</span>
+          <select class="filter-select" id="f-status">
+            <option value="">全部状态</option>
+            <option value="已上线">已上线</option>
+            <option value="已完成">已完成（无需发布）</option>
+            <option value="待上线">待上线</option>
+            <option value="进行中">进行中</option>
+            <option value="已排期">已排期</option>
+            <option value="停滞">停滞</option>
+          </select>
+        </div>
+        <div class="search-group">
+          <span class="filter-label">搜索任务卡</span>
+          <div class="search-wrap">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.7"/><path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <input type="text" class="filter-search" id="f-search" placeholder="输入任务卡名称关键词…">
+          </div>
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-primary-sm" id="btn-add">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          新增记录
+        </button>
+        <button class="btn-secondary-sm" id="btn-import">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 9h8M6 1v6M3 4l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          批量导入
+        </button>
+        <button class="filter-reset" id="btn-reset">清空筛选</button>
+        <span class="result-count" id="result-count"></span>
+      </div>
+    </div>
+
+    <!-- 卡片区 -->
+    <div id="cards-container"></div>
+  </main>
+</div>
+
+<!-- 异常情况详情弹出框 -->
+<div id="anomaly-popup"></div>
+
+<!-- 批量操作浮动栏 -->
+<div class="bulk-bar" id="bulk-bar">
+  <span class="bulk-bar-count">已选 <span id="bulk-count">0</span> 条</span>
+  <button class="btn-bulk-delete" id="btn-bulk-delete">删除选中</button>
+  <button class="btn-bulk-cancel" id="btn-bulk-cancel">取消选择</button>
+</div>
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">编辑任务</span>
+      <button class="modal-close" id="modal-close-btn">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-row" id="edit-new-fields" style="display:none">
+        <div class="modal-field">
+          <label>工作室</label>
+          <input type="text" class="modal-input" id="edit-studio" placeholder="如 摘星工作室">
+        </div>
+        <div class="modal-field">
+          <label>游戏 / 项目<span class="required-hint">（必填）</span></label>
+          <input type="text" class="modal-input required-input" id="edit-game" placeholder="如 问道手游">
+        </div>
+      </div>
+      <div class="modal-field" id="edit-submitter-field" style="display:none">
+        <label>提单人<span class="required-hint">（必填）</span></label>
+        <input type="text" class="modal-input required-input" id="edit-submitter-input" placeholder="姓名">
+      </div>
+      <div class="modal-field">
+        <label>任务卡名称<span class="required-hint">（必填）</span></label>
+        <input type="text" class="modal-input required-input" id="edit-task">
+      </div>
+      <div class="modal-field">
+        <label>链接<span class="required-hint">（必填）</span></label>
+        <input type="text" class="modal-input required-input" id="edit-link" placeholder="https://…">
+      </div>
+      <div class="modal-field">
+        <label>状态</label>
+        <select class="modal-select" id="edit-status">
+          <option value="已上线">已上线</option>
+          <option value="进行中">进行中</option>
+          <option value="已排期">已排期</option>
+          <option value="待排期">待排期</option>
+          <option value="暂未排期">暂未排期</option>
+          <option value="已完成">已完成</option>
+          <option value="停滞">停滞</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>本周进展</label>
+        <textarea class="modal-textarea" id="edit-update"></textarea>
+      </div>
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>进度更新时间</label>
+          <input type="date" class="modal-input" id="edit-updatedate">
+        </div>
+        <div class="modal-field">
+          <label>期望完成时间</label>
+          <input type="date" class="modal-input" id="edit-expect">
+        </div>
+        <div class="modal-field">
+          <label>发版时间</label>
+          <input type="date" class="modal-input" id="edit-eta">
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>异常情况</label>
+        <textarea class="modal-textarea" id="edit-anomaly" style="min-height:52px"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="modal-cancel-btn">取消</button>
+      <button class="btn-save" id="modal-save-btn">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 批量导入 Modal -->
+<div class="modal-overlay" id="import-modal">
+  <div class="modal" style="width:680px">
+    <div class="modal-header">
+      <span class="modal-title">批量导入数据</span>
+      <button class="modal-close" id="import-close-btn">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label>粘贴 JSON 数据（数组格式，每条记录包含 studio/game/task/link/submitter/status/update/expect/eta/anomaly 字段）</label>
+        <textarea class="modal-textarea" id="import-json" style="min-height:200px;font-family:monospace;font-size:12px" placeholder='[{"studio":"摘星工作室","game":"问道手游","task":"[任务卡]示例","link":"","submitter":"张三","status":"进行中","update":"开发中","expect":"2026.04.30","eta":"2026.05.01","anomaly":"无"}]'></textarea>
+      </div>
+      <div id="import-preview" style="font-size:12px;color:var(--text-muted);margin-top:4px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="import-cancel-btn">取消</button>
+      <button class="btn-secondary-sm" id="import-parse-btn" style="margin-right:4px">解析预览</button>
+      <button class="btn-save" id="import-confirm-btn">确认导入</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_DATA = [
+  {
+    "studio": "摘星工作室",
+    "game": "问道手游",
+    "task": "[任务卡]【问道手游】-固定队加载优化-20260401 ",
+    "link": "https://leiting.feishu.cn/docx/PzRSd3TgNoZSJ0xh8WIcgC83nf0",
+    "submitter": "陈洁",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_ef027f98-db5b-4b2c-acc0-980e9710ec7g_32.webp",
+    "status": "已上线",
+    "update": "2026.03.31已上线",
+    "expect": "2026.03.31",
+    "eta": "2026.03.31",
+    "anomaly": "无",
+    "updateDate": "2026.04.03"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "问道手游",
+    "task": "[任务卡]【问道手游】-网站对应游戏正式环境联调验收优化-20260312 ",
+    "link": "https://leiting.feishu.cn/docx/FvVldSnLKorA1Ax9nxpc13Vsnlf",
+    "submitter": "陈洁",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_ef027f98-db5b-4b2c-acc0-980e9710ec7g_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发完成；\n2、运营支撑组合并至[任务卡]【问道手游】-10周年预约专题-20260205 需求进行开发，开发中",
+    "expect": "2026.04.03",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "问道手游",
+    "task": "[任务卡]【问道手游】-10周年赛事专题页H5-20260316 ",
+    "link": "https://leiting.feishu.cn/docx/V8ABdEsNsogrE0xyDqOcS2G0nLb",
+    "submitter": "卓奕敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00bp_8b1fc1a2-1818-438d-b7db-66d69b663b5g_32.webp",
+    "status": "进行中",
+    "update": "1、开发中，预计2026.04.08开发完成；\n2、测试已排期，工期：2026.04.07~2026.04.17；\n",
+    "expect": "2026.04.17",
+    "eta": "2026.04.17",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "问道手游",
+    "task": "[任务卡]【问道手游】-10周年预约专题-20260205 ",
+    "link": "https://leiting.feishu.cn/docx/O4BvdPxAQoxIQrxiGKEcynKSnid",
+    "submitter": "陈洁",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_ef027f98-db5b-4b2c-acc0-980e9710ec7g_32.webp",
+    "status": "进行中",
+    "update": "1、开发已完成，测试验收中，预计2026.03.31验收完成；\n2、技术中台配合压测中；\n3、预计2026.04.10上线",
+    "expect": "2026.03.05",
+    "eta": "2026.04.10",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "问道手游",
+    "task": "[任务卡]【问道手游】-十周年节点历史充值提供-20260317 ",
+    "link": "https://leiting.feishu.cn/docx/WtOPdjCt9owVEcxFgiJcyxzHnid",
+    "submitter": "郑龙",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_e5dcd0e3-52bf-4c7e-8053-c8605f5f7b8g_32.webp",
+    "status": "进行中",
+    "update": "服务端开发中，预计2026.03.27与研发进行联调",
+    "expect": "2026.03.27",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "问道手游",
+    "task": "[任务卡]【问道手游】-10周年周年宠小游戏需求-20260302 ",
+    "link": "https://leiting.feishu.cn/docx/S6lJdL7G8ow71LxyP78c7M7Fnee",
+    "submitter": "聂小慧",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00b2_e0c68368-786e-4c26-a76a-77e55561c08g_32.webp",
+    "status": "进行中",
+    "update": "1、开发完成；\n2、技术中台配合压测，工期：2026.03.19~2026.04.17",
+    "expect": "2026.03.05",
+    "eta": "2026.04.13",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "问道手游",
+    "task": "[任务卡]【问道手游】-赛事相关数据接口封装需求-20260228 ",
+    "link": "https://leiting.feishu.cn/docx/Qdk6dFxTaoP5yYx8ivKcOFTrnUg",
+    "submitter": "曹鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00qf_91b933bc-ff3e-494c-9371-725657b6c79g_32.webp",
+    "status": "进行中",
+    "update": "1、服务端接口已提供，需求转需求方自测",
+    "expect": "2026.03.12",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.23"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "问道手游",
+    "task": "[任务卡]【问道手游】-十周年-十年纪事需求-20260128 ",
+    "link": "https://leiting.feishu.cn/docx/YSXwd2cjeoKaGcxcpxScJ17anlg",
+    "submitter": "陈洁",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_ef027f98-db5b-4b2c-acc0-980e9710ec7g_32.webp",
+    "status": "进行中",
+    "update": "1、产品验收中；\n2、压测已完成；\n3、预计2026.04.20上线",
+    "expect": "2026.04.20",
+    "eta": "2026.04.20",
+    "anomaly": "无",
+    "updateDate": "2026.03.18"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "问道手游",
+    "task": "[任务卡]【问道手游】-10周年主播投票PK网页需求-20260305 ",
+    "link": "https://leiting.feishu.cn/docx/GsJ3dKILuouiPix8WSrckuhjnVh",
+    "submitter": "陈洁",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_ef027f98-db5b-4b2c-acc0-980e9710ec7g_32.webp",
+    "status": "已排期",
+    "update": "1、开发已排期，工期：2026.03.30~2026.04.01；\n2、测试已排期，工期：2026.04.02~2026.04.02；\n3、预计2026.04.17上线",
+    "expect": "2026.04.08",
+    "eta": "2026.04.17",
+    "anomaly": "无",
+    "updateDate": "2026.03.27"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "问道手游",
+    "task": "[任务卡]【问道手游】-三端支持本地推送功能-20260227 ",
+    "link": "https://leiting.feishu.cn/docx/QVfsdhSAZoUBf1xuiocct9NjnQe",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g_32.webp",
+    "status": "已排期",
+    "update": "1、客户端已排期，工期：2026.03.30~2026.04.03；\n2、测试待排期",
+    "expect": "2026.03.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "问道手游",
+    "task": "[任务卡]【问道手游】-不等价查证工具需求-20251230 ",
+    "link": "https://leiting.feishu.cn/docx/ZgYXdhpMdowvwwxoQscctO1cnOG",
+    "submitter": "李文政",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_f667ef8b-6ce5-40e0-ab69-28cf91347f5g_32.webp",
+    "status": "已排期",
+    "update": "1、服务端已排期，工期：2026.04.08~2026.04.17；\n2、前端组待排期",
+    "expect": "2026.02.06",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.24"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "掌上问道",
+    "task": "任务描述",
+    "link": null,
+    "submitter": "提单人",
+    "avatar": "",
+    "status": "实际进度",
+    "update": "本周情况同步",
+    "expect": "期望完成时间（需求方）",
+    "eta": "预计对外时间（技术中台）",
+    "anomaly": "异常情况"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "掌上问道",
+    "task": "[任务卡]【掌上问道】-七鱼验证token调用需求-20260228 ",
+    "link": "https://leiting.feishu.cn/docx/DMpGd7OKfoMVfLxxd0Bcykvxnif",
+    "submitter": "郭婉菁",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_e90c6964-03ba-476b-9d99-884a467c288g_32.webp",
+    "status": "已上线",
+    "update": "2026.04.03已上线",
+    "expect": "2026.03.13",
+    "eta": "2026.04.03",
+    "anomaly": "无",
+    "updateDate": "2026.04.03"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "掌上问道",
+    "task": "[任务卡]【掌上问道】-v2.25.1需求（UI+开发）-20260302 ",
+    "link": "https://leiting.feishu.cn/docx/PfGydlUdOos5J9xIDaucNhzSnZd",
+    "submitter": "郭婉菁",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_e90c6964-03ba-476b-9d99-884a467c288g_32.webp",
+    "status": "已上线",
+    "update": "2026.04.02已上线",
+    "expect": "2026.04.09",
+    "eta": "2026.04.02",
+    "anomaly": "无",
+    "updateDate": "2026.04.03"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "掌上问道",
+    "task": "[任务卡]【掌上问道】-登录接口迁移-20260306 ",
+    "link": "https://leiting.feishu.cn/docx/E3jrd9XdOo4QASxuIWec2Eownsd",
+    "submitter": "潘虹余",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00se_7c57d48a-a441-4c6e-ab43-b60fd0d20efg_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发完成；\n2、测试验收中，工期：2026.03.16~2026.03.27；\n3、2026.03.27上线",
+    "expect": "2026.03.31",
+    "eta": "2026.03.27",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "掌上问道",
+    "task": "[任务卡]【掌上问道】-10周年抽奖转盘人拉人页面复用-20260317 ",
+    "link": "https://my.feishu.cn/docx/SeHwdyT6to6t1oxdcDXcEIjenKd",
+    "submitter": "谢誉瑾",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_6b0b5a5c-45e2-4fb2-bef8-88c05252faeg_32.webp",
+    "status": "已排期",
+    "update": "1、运营支撑组前端组已排期，工期：2026.04.02~2026.04.03；\n2、运营支撑组服务端已排期，工期：2026.04.02~2026.04.02；\n3、测试已排期，工期：2026.04.07~2026.04.07",
+    "expect": "2026.04.20",
+    "eta": "2026.04.20",
+    "anomaly": "无",
+    "updateDate": "2026.04.02"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "聚宝斋",
+    "task": "任务描述",
+    "link": null,
+    "submitter": "提单人",
+    "avatar": "",
+    "status": "实际进度",
+    "update": "本周情况同步",
+    "expect": "期望完成时间（需求方）",
+    "eta": "预计对外时间（技术中台）",
+    "anomaly": "异常情况"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "聚宝斋",
+    "task": "[任务卡]【聚宝斋】-回归玩家选号推荐方案-20251113 ",
+    "link": "https://leiting.feishu.cn/docx/XhXDdSipuo96XwxhpDZcDqA6nIg",
+    "submitter": "杨晓婕",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_6f955f86-3367-4d14-a771-7f410ec67dfg_32.webp",
+    "status": "进行中",
+    "update": "1、开发已完成；\n2、测试验收中，工期：2026.04.01~2026.04.15",
+    "expect": "2026.03.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.04.02"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "聚宝斋",
+    "task": "[任务卡]【聚宝斋】-12月需求汇总1225（需求四）-20251230  ",
+    "link": "https://leiting.feishu.cn/docx/CpKOdLP3KoCJiDxmpItczR1HnEb",
+    "submitter": "杨晓婕",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00cm_2556105a-91aa-4490-b11d-53380a0e791g_32.webp",
+    "status": "进行中",
+    "update": "1、需求方需求暂未敲定，测试无法进行验收，验收暂停\n2、发版时间待评估",
+    "expect": "2026.04.01",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.12"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "聚宝斋",
+    "task": "【聚宝斋】主流程预警补齐P2\n",
+    "link": "https%3A%2F%2Fleiting.feishu.cn%2Fdocx%2FBnSvdrAjmoaQQUxn2V6c95UrnLo",
+    "submitter": "段旭",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/v1/65275d63-954e-482c-8e91-afccc9a0843g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "开发已完成，改需求方自测",
+    "expect": "2025.11.30",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "聚宝斋",
+    "task": "[任务卡]【聚宝斋】3月优化需求汇总-20260319 ",
+    "link": "https://my.feishu.cn/wiki/NFZpwnvodiyaQIkxRcac3l9nnKa",
+    "submitter": "杨晓婕",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_6f955f86-3367-4d14-a771-7f410ec67dfg_32.webp",
+    "status": "已排期",
+    "update": "1、前端组已排期，工期：2026.04.01~2026.04.02；\n2、服务端待排期；\n3、测试待服务端排期后排期",
+    "expect": "2026.04.03",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.24"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "杖剑传说（国内&海外）",
+    "task": "任务描述",
+    "link": null,
+    "submitter": "提单人",
+    "avatar": "",
+    "status": "实际进度",
+    "update": "本周情况同步",
+    "expect": "期望完成时间（需求方）",
+    "eta": "预计对外时间（技术中台）",
+    "anomaly": "异常情况"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "杖剑传说（国内&海外）",
+    "task": "[任务卡]【杖剑传说】-处罚接口新增到平台配置-20260112 ",
+    "link": "https://leiting.feishu.cn/docx/SKIJdsoosoW8GaxUdhQc5RX2nhh",
+    "submitter": "徐浩",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_259d88b6-a7f8-4719-97fa-01e7205e586g_32.webp",
+    "status": "已上线",
+    "update": "2026.03.26已上线",
+    "expect": "2026.01.19",
+    "eta": "2026.03.26",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "杖剑传说（国内&海外）",
+    "task": "[任务卡]杖剑传说-一周年旅行人拉人H5产品需求文档-20260319 ",
+    "link": "https://my.feishu.cn/wiki/AlaBw5gVaiWZJykXa1JcCvnTnrg",
+    "submitter": "聂小慧",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00b2_e0c68368-786e-4c26-a76a-77e55561c08g_32.webp",
+    "status": "进行中\n",
+    "update": "开发中，工期：2026.04.01~2026.04.21",
+    "expect": "2026.04.30",
+    "eta": "2026.04.30",
+    "anomaly": "无",
+    "updateDate": "2026.04.02"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "杖剑传说（国内&海外）",
+    "task": "[任务卡]【杖剑传说】-云抖小SDK升级+一体化接口封装-20260304 ",
+    "link": "https://leiting.feishu.cn/docx/A3R3dozXxoYRagxHPGfcGoPJncf",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g_32.webp",
+    "status": "进行中\n",
+    "update": "1、客户端开发完成；\n2、测试排期需重新评估",
+    "expect": "2026.04.03",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "杖剑传说（国内&海外）",
+    "task": "[任务卡]【杖剑传说】-通用版交易平台-商品详情优化-20260310 ",
+    "link": "https://leiting.feishu.cn/docx/MHjfdwfI4ohYs5xKqN7csZmLnMg",
+    "submitter": "范洁敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00c5_3d8f042d-a1ed-4717-b716-ca025b27fa1g_32.webp",
+    "status": "进行中\n",
+    "update": "1、前端组技术方案已出，待与研发进行确认后评估是否进入正式开发",
+    "expect": "2026.04.30",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.24"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "杖剑传说（国内&海外）",
+    "task": "[任务卡]【杖剑传说（国内）】-2v2挑战赛压测需求-20260302 ",
+    "link": "https://leiting.feishu.cn/docx/ILXDdzV92oUubXxWgaDcFDE9nkc",
+    "submitter": "蔡宸浩",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00u5_51f9c09d-5a41-4720-acfe-765ac50329bg_32.webp",
+    "status": "进行中\n",
+    "update": "测试进行中，工期：2026.03.09~2026.03.19",
+    "expect": "2026.03.20",
+    "eta": "2026.03.19",
+    "anomaly": "无",
+    "updateDate": "2026.03.19"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "杖剑传说（国内&海外）",
+    "task": "[任务卡]【杖剑传说】-一体化SDK鸿蒙支持商店跳转-20260304 ",
+    "link": "https://leiting.feishu.cn/docx/SzlrdBcDMokvlGxtsumcjPtmnIc",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中\n",
+    "update": "1、客户端开发已完成；\n2、测试待排期",
+    "expect": "2026.03.20",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.19"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "杖剑传说（国内&海外）",
+    "task": "【测试用例】《杖剑传说（韩国）》接入JoyBoxSDK（首次接入） -20260105 ",
+    "link": "https://leiting.feishu.cn/wiki/S90zwt0tHiiFk3kJ97ycoxConsc",
+    "submitter": "李宣敬",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00a3_4a547513-86ab-47bf-b555-0d334f1c36bg_32.webp",
+    "status": "进行中",
+    "update": "验收已完成，待研发修复bug后进行回归，修复时间待@李宣敬同步\n【汇总Buglist】杖剑传说（韩国） \nps:删档付费测试预计延期至春节后",
+    "expect": "2026.01.09",
+    "eta": "2026.01.09",
+    "anomaly": "无"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "道友来挖宝",
+    "task": "任务描述",
+    "link": null,
+    "submitter": "提单人",
+    "avatar": "",
+    "status": "实际进度",
+    "update": "本周情况同步",
+    "expect": "期望完成时间（需求方）",
+    "eta": "预计对外时间（技术中台）",
+    "anomaly": "异常情况"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "道友来挖宝",
+    "task": "【测试用例】【道友来挖宝】抖音小游戏-接入小游戏SDK（首次接入）-20260324 ",
+    "link": "https://leiting.feishu.cn/wiki/SOmvwpuzQiqBUzkkwqGcTSxpnNg?sheet=mi3XNb&table=tblCw7pK4DqjuLwR&view=vewGGGBHfC",
+    "submitter": "王俊杰",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_f28b49d8-6ce9-43e7-b21a-2957a26118fg_32.webp",
+    "status": "进行中",
+    "update": "1、SDK2026.03.27验收完成，待研发修复问题后回归验收；\n2、中台服务端验收中",
+    "expect": "2026.03.27",
+    "eta": "2026.03.27",
+    "anomaly": "无"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "道友来挖宝",
+    "task": "[任务卡]【道友来挖宝】-网页登录组件增加自动注册sid开关-20260311 ",
+    "link": "https://leiting.feishu.cn/docx/ZuWkdo8Zror7fRxbN5acnf8Cned",
+    "submitter": "聂小慧",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00b2_e0c68368-786e-4c26-a76a-77e55561c08g_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发已完成；\n2、测试待排期",
+    "expect": "2026.04.20",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "道友来挖宝",
+    "task": "[任务卡]【道友来挖宝】-解绑相关功能工作量盘点与调研-20260116 ",
+    "link": "https://leiting.feishu.cn/docx/DtXndaJMNoVHxTxFcR2cQRJZnsh",
+    "submitter": "范洁敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00c5_3d8f042d-a1ed-4717-b716-ca025b27fa1g_32.webp",
+    "status": "进行中",
+    "update": "开发已完成调研，待同步产品验收\n",
+    "expect": "2026.02.05",
+    "eta": "2026.03.26",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "道友来挖宝",
+    "task": "[任务卡]【抖店发货系统】-道友兼容抖音小游戏下单+杖剑传说兼容云抖小下单-20260302 ",
+    "link": "https://leiting.feishu.cn/docx/S8oId1zIioCNTjxwmHJcikGGnlb",
+    "submitter": "兔力-陈勉",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_0089_0f679e37-f815-4e22-be1e-7ef67539be3g_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发完成；\n2、该需求暂无法验收，测试待重新排期",
+    "expect": "2026.03.20",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "道友来挖宝",
+    "task": "[任务卡]【道友来挖宝】-抖音小游戏接入客服分流需求-20260310 ",
+    "link": "https://leiting.feishu.cn/docx/Svd2dE0YaoLrn6xAxXPca7aPnkd",
+    "submitter": "王俊杰",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_f28b49d8-6ce9-43e7-b21a-2957a26118fg_32.webp",
+    "status": "进行中",
+    "update": "1、开发进行中，预计2026.04.02开发完成；\n2、测试已排期，工期：2026.04.07~2026.04.14；\n3、2026.04.14上线",
+    "expect": "2026.03.20",
+    "eta": "2026.04.14",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "道友来挖宝",
+    "task": "[任务卡]【道友来挖宝】-一周年挖宝小游戏H5-20260313 ",
+    "link": "https://leiting.feishu.cn/docx/PNuidpjNJou2hYxwqMacJmslnBc",
+    "submitter": "聂小慧",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00b2_e0c68368-786e-4c26-a76a-77e55561c08g_32.webp",
+    "status": "已排期",
+    "update": "1、运营支撑组前端已排期，工期：2026.04.07~2026.04.30；\n2、运营支撑组服务端&测试待排期",
+    "expect": "2026.05.15",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.04.02"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "道友来挖宝",
+    "task": "[任务卡]【道友来挖宝】-误操作恢复字段优化-20260127 ",
+    "link": "https://leiting.feishu.cn/docx/HI7Kdo0NqoK7AmxSX3McdXs8nrd",
+    "submitter": "陈禄发",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00v8_c3475af4-80b5-4557-9d5d-39e4377679bg_32.webp",
+    "status": "已排期",
+    "update": "前端&服务端已排期，工期：2026.04.03~2026.04.07",
+    "expect": "2026.03.26",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.24"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "封神幻想世界",
+    "task": "任务描述",
+    "link": null,
+    "submitter": "提单人",
+    "avatar": "",
+    "status": "实际进度",
+    "update": "本周情况同步",
+    "expect": "期望完成时间（需求方）",
+    "eta": "预计对外时间（技术中台）",
+    "anomaly": "异常情况"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "封神幻想世界",
+    "task": "【测试用例】《封神幻想世界（鸿蒙）》（非首次接入）-20260324 ",
+    "link": "https://leiting.feishu.cn/wiki/CGWcwtbFriMrlTkeUIGcpMfmnXb?sheet=ZZXFgs",
+    "submitter": "刘宇航",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00cb_f59c3517-eedb-42c9-b7c6-a7e40a1f17cg_32.webp",
+    "status": "已完成（无需发布）",
+    "update": "2026.03.27完成验收",
+    "expect": "2026.03.27",
+    "eta": "2026.03.27",
+    "anomaly": "无"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "封神幻想世界",
+    "task": "[任务卡]【封神幻想世界】-VIP页面增加会员等级进度-20260313 ",
+    "link": "https://leiting.feishu.cn/docx/YhdDd7DmpoqIlUxRjzncvEc8n4e",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "1、开发进行中，由于其他需求的插入，开发完成时间延至2026.04.03；\n2、测试待排期",
+    "expect": "2026.04.10",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "问剑长生（国内&海外）",
+    "task": "[任务卡]【问剑长生】-GM工具日志查询调整-20260323 ",
+    "link": "https://my.feishu.cn/wiki/AM4cwaMhuixt9kk6KJocwPRCnKf",
+    "submitter": "曾文森",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00tg_dc92ad7a-c660-4861-a25d-f8c314f02adg_32.webp",
+    "status": "已上线",
+    "update": "2026.04.03已上线",
+    "expect": "2026.04.04",
+    "eta": "2026.03.20",
+    "anomaly": "",
+    "updateDate": "2026.04.03"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "问剑长生（国内&海外）",
+    "task": "[任务卡]【问剑长生】-通用GM接入导出json数据功能-20260106 ",
+    "link": "https://leiting.feishu.cn/docx/M3nGdfbtko1WvnxDgm7cVH2PnDf",
+    "submitter": "刘阳",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00bo_1a0d5c15-5c53-4fe5-8617-0595815df0bg_32.webp",
+    "status": "已上线",
+    "update": "2026.04.03已上线",
+    "expect": "2026.03.19",
+    "eta": "2026.01.23",
+    "anomaly": "无",
+    "updateDate": "2026.04.03"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "问剑长生（国内&海外）",
+    "task": "[任务卡]【问剑长生（国内）】-一体化工程更新（iOS 升级到3.4.7）-20260321 ",
+    "link": "https://my.feishu.cn/wiki/Gl67wBM8ai5wySksk1zcg7LAnEf",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g_32.webp",
+    "status": "已完成（无需发布）",
+    "update": "2026.03.24已完成（无需发布）",
+    "expect": "2026.03.19",
+    "eta": "2026.03.18",
+    "anomaly": "无",
+    "updateDate": "2026.03.25"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "九牧之野",
+    "task": "任务描述",
+    "link": null,
+    "submitter": "提单人",
+    "avatar": "",
+    "status": "实际进度",
+    "update": "本周情况同步",
+    "expect": "期望完成时间（需求方）",
+    "eta": "预计对外时间（技术中台）",
+    "anomaly": "异常情况"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "九牧之野",
+    "task": "[任务卡]【九牧之野】-官方wiki站点-20260317 ",
+    "link": "https://leiting.feishu.cn/docx/DeRMdM10vouCBtx70ggcarNTnQb",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "已上线",
+    "update": "2026.03.26已上线",
+    "expect": "2026.03.25",
+    "eta": "2026.03.20",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "九牧之野",
+    "task": "[任务卡]【社区小程序】-九牧之野预备盟2.0-20260320 ",
+    "link": "https://my.feishu.cn/wiki/YNbiwnJpdioE7xkJpf6covFJnAd",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发中，工期：2026.03.27~2026.04.01；\n2、前端组已排期，工期：2026.03.30~2026.04.02；\n3、测试待排期",
+    "expect": "2026.03.27",
+    "eta": "2026.04.10",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "九牧之野",
+    "task": "[任务卡]【社区小程序】-九牧之野预备抽卡2.0-20260320 ",
+    "link": "https://my.feishu.cn/wiki/H005wc2cfikrmYkeDavcVWMfnqb",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发完成；\n2、前端组已排期，工期：2026.03.30~2026.04.01；\n3、测试待排期",
+    "expect": "2026.03.27",
+    "eta": "2026.04.10",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "九牧之野",
+    "task": "[任务卡]【简易版交易平台】-九牧之野上架交易平台-20250728 ",
+    "link": "https://leiting.feishu.cn/docx/DvBtdNjS4om8wOxMXIicZgDWnZf",
+    "submitter": "喻泽远",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_0077_2f767e75-7f8e-478e-83ee-9c616c5f19fg_32.webp",
+    "status": "进行中",
+    "update": "1、开发已完成；\n2、测试验收中，完成时间待重新评估",
+    "expect": "2025.10.15",
+    "eta": "2025.10.15",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "九牧之野",
+    "task": "[任务卡]【九牧之野】-华为商推智能分包归因上报-20260205 ",
+    "link": "https://leiting.feishu.cn/docx/NAkWd327volAX6x82UAc80zwnse",
+    "submitter": "林雪",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00st_6c8be5e0-8fda-4b51-b403-52e0d89e908g_32.webp",
+    "status": "进行中",
+    "update": "1、客户端开发已完成；\n2、测试暂停中，等待数据中心配合处理\n",
+    "expect": "2026.02.27",
+    "eta": "2026.03.15",
+    "anomaly": "无",
+    "updateDate": "2026.03.24"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "一念逍遥（国内&海外）",
+    "task": "任务描述",
+    "link": null,
+    "submitter": "提单人",
+    "avatar": "",
+    "status": "实际进度",
+    "update": "本周情况同步",
+    "expect": "期望完成时间（需求方）",
+    "eta": "预计对外时间（技术中台）",
+    "anomaly": "异常情况"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "一念逍遥（国内&海外）",
+    "task": "[任务卡]【一念逍遥先知】-邮件发放功能优化-20260310 ",
+    "link": "https://leiting.feishu.cn/docx/SRmwdDOKpoxQfRx9JzVcFVx4n6N",
+    "submitter": "侯钦瀚",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00nl_8a77426b-44c0-42ae-a36d-908fc65424ag_32.webp",
+    "status": "已上线",
+    "update": "2026.04.03已上线",
+    "expect": "2026.04.04",
+    "eta": "2026.04.10",
+    "anomaly": "无",
+    "updateDate": "2026.04.03"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "一念逍遥（国内&海外）",
+    "task": "[任务卡]【测试用例】-《一念逍遥》（国内）鸿蒙-非全量测试-20260401 ",
+    "link": "https://leiting.feishu.cn/docx/Sfa3d37Zro39RmxstGTczfclnJd",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g_32.webp",
+    "status": "进行中",
+    "update": "测试验收中，预计2026.04.03完成",
+    "expect": "2026.02.27",
+    "eta": "2026.04.03",
+    "anomaly": "无",
+    "updateDate": "2026.04.02"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "一念逍遥（国内&海外）",
+    "task": "[任务卡]【一念逍遥交易平台】-用户冻结金额覆盖问题修复-20260225 ",
+    "link": "https://leiting.feishu.cn/docx/OF4qdGw3NoKFSAxSihucUVZlnQb",
+    "submitter": "王哲",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00ut_edc5ec01-ab3a-419c-b9a5-f95719a0ca8g_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发已完成；\n2、测试待排期",
+    "expect": "2026.02.27",
+    "eta": "2026.03.20",
+    "anomaly": "无",
+    "updateDate": "2026.02.26"
+  },
+  {
+    "studio": "不二工作室",
+    "game": "一念逍遥（国内&海外）",
+    "task": "[任务卡]【一念逍遥】-舆情自动化处理功能-20260310 ",
+    "link": "https://leiting.feishu.cn/docx/SquUd2fDHo5Uigx2m9fcYTeanXd",
+    "submitter": "陈禄发",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00v8_c3475af4-80b5-4557-9d5d-39e4377679bg_32.webp",
+    "status": "已排期",
+    "update": "1、服务端已排期，工期：2026.04.01~2026.04.15；\n2、前端组已排期，工期：2026.04.09~2026.04.15\n3、测试待排期",
+    "expect": "2026.03.18",
+    "eta": "2026.04.15",
+    "anomaly": "无",
+    "updateDate": "2026.03.24"
+  },
+  {
+    "studio": "INJOY工作室",
+    "game": "杖剑传说（海外）",
+    "task": "【测试用例】《杖剑传说-港台ios》接入JoyBoxSDK（非首次接入）-20260323 ",
+    "link": "https://leiting.feishu.cn/wiki/BfiIwlK00i49tqklsAtcLqh1nxh",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g_32.webp",
+    "status": "已完成（无需发布）",
+    "update": "2026.03.30已完成（无需发布）",
+    "expect": "2026.03.30",
+    "eta": "2026.03.30",
+    "anomaly": "无"
+  },
+  {
+    "studio": "INJOY工作室",
+    "game": "杖剑传说（海外）",
+    "task": "【测试用例】《杖剑传说-日本ios》接入JoyBoxSDK（非首次接入）-20260323 ",
+    "link": "https://leiting.feishu.cn/wiki/OyaXwZL2BiRNVTkMyrmczDpLnHc",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g_32.webp",
+    "status": "进行中",
+    "update": "2026.03.30验收完成，待研发修复问题进行回归验收",
+    "expect": "2026.03.30",
+    "eta": "2026.03.30",
+    "anomaly": "无"
+  },
+  {
+    "studio": "INJOY工作室",
+    "game": "杖剑传说（海外）",
+    "task": "【测试用例】《杖剑传说（欧美）》接入JoyBoxSDK（首次接入）-20260311 ",
+    "link": "https://leiting.feishu.cn/wiki/Yc8Tw5IcTiK6EKkOOTzcZOJKnwd",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g_32.webp",
+    "status": "进行中",
+    "update": "已验收，待问题修复后回归验收",
+    "expect": "2026.03.13",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "INJOY工作室",
+    "game": "石油大亨（国内&海外）",
+    "task": "任务描述",
+    "link": null,
+    "submitter": "提单人",
+    "avatar": "",
+    "status": "实际进度",
+    "update": "本周情况同步",
+    "expect": "期望完成时间（需求方）",
+    "eta": "预计对外时间（技术中台）",
+    "anomaly": "异常情况"
+  },
+  {
+    "studio": "INJOY工作室",
+    "game": "石油大亨（国内&海外）",
+    "task": "[任务卡]【测试用例】-石油大亨（国内）升级雷霆SDK（非首次接入）-20260331 ",
+    "link": "https://leiting.feishu.cn/docx/PKacdw563oXTpRx7j2RcxyOOnqd",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g_32.webp",
+    "status": "进行中",
+    "update": "验收中，预计2026.04.02验收完成",
+    "expect": "2026.03.13",
+    "eta": "2026.04.02",
+    "anomaly": "无",
+    "updateDate": "2026.04.02"
+  },
+  {
+    "studio": "三重奏工作室",
+    "game": "出动吧！库鲁",
+    "task": "[任务卡]【出动吧！库鲁】-游戏功能压测需求-20260304 ",
+    "link": "https://leiting.feishu.cn/docx/JSuddoTstoIlLpxjLdHc40CQnZb",
+    "submitter": "黄天赐",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00pl_97260695-50cd-44db-8340-c43eeb415ddg_32.webp",
+    "status": "进行中",
+    "update": "测试压测中，工期：2026.03.23~2026.04.10",
+    "expect": "2026.03.13",
+    "eta": "2026.04.08",
+    "anomaly": "无",
+    "updateDate": "2026.03.24"
+  },
+  {
+    "studio": "三重奏工作室",
+    "game": "奥比岛",
+    "task": "任务描述",
+    "link": null,
+    "submitter": "提单人",
+    "avatar": "",
+    "status": "实际进度",
+    "update": "本周情况同步",
+    "expect": "期望完成时间（需求方）",
+    "eta": "预计对外时间（技术中台）",
+    "anomaly": "异常情况"
+  },
+  {
+    "studio": "三重奏工作室",
+    "game": "奥比岛",
+    "task": "[任务卡]【测试用例】-奥比岛（国内）升级雷霆SDK（非首次接入）-20260331 ",
+    "link": "https://leiting.feishu.cn/docx/Rj2NdSmn5ojpVPxF6lTc49Jannh",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g_32.webp",
+    "status": "进行中",
+    "update": "验收中，预计2026.04.02验收完成",
+    "expect": "2026.03.13",
+    "eta": "2026.04.02",
+    "anomaly": "无",
+    "updateDate": "2026.04.02"
+  },
+  {
+    "studio": "吉趣社",
+    "game": "技术基建-国内（外部需求）",
+    "task": "【测试用例】开罗游戏世界（oppo官方）升级雷霆SDK （首次接入）-20260310 ",
+    "link": "https://leiting.feishu.cn/wiki/Mom5woqVaiX8OXkcbSmc7LkBnAg",
+    "submitter": "胡诗情",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00s1_bbeac310-99f2-47dc-bca9-c658d5609f9g_32.webp",
+    "status": "已完成（无需发布）",
+    "update": "2026.03.24已完成（无需发布）",
+    "expect": "2026.03.13",
+    "eta": "2026.03.24",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【雷霆SDK】-易盾设备指纹数据传输数据（二期）-20260327 ",
+    "link": "https://my.feishu.cn/wiki/CWzbwAtyNiyevGkIbzxcdFlBn1f",
+    "submitter": "彭思源",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00gq_4954b2d2-2618-475d-a18f-26a887ff90fg_32.webp",
+    "status": "已上线",
+    "update": "1、客户端2026.03.31已上线；\n2、服务端2026.04.01已上线\n",
+    "expect": "2026.03.31",
+    "eta": "2026.03.31",
+    "anomaly": "",
+    "updateDate": "2026.04.01"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【客服工具】-账号申诉工具优化-20251111 ",
+    "link": "https://leiting.feishu.cn/docx/WQjPds1jPomF2Yx1NwHcRGqnn1f",
+    "submitter": "李文政",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_f667ef8b-6ce5-40e0-ab69-28cf91347f5g_32.webp",
+    "status": "待上线",
+    "update": "待上线，发版时间待定",
+    "expect": "2025.12.31",
+    "eta": "",
+    "anomaly": "无",
+    "updateDate": "2026.03.05"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【通用交易平台】-在卖单管理增加分账解冻-20260325 ",
+    "link": "https://leiting.feishu.cn/docx/MBExd4Q7uoAPdvxtKvXcoyjRnYe",
+    "submitter": "范洁敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00c5_3d8f042d-a1ed-4717-b716-ca025b27fa1g_32.webp",
+    "status": "进行中",
+    "update": "",
+    "expect": "",
+    "eta": "",
+    "anomaly": ""
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【雷霆平台】-注销手游账号后sid匿名化-20251218 ",
+    "link": "https://leiting.feishu.cn/docx/NM0md7P0sozC4Lx3XkrcQ0Jynie",
+    "submitter": "王统军",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00us_0f29a958-0878-480b-923f-49fc2cca8beg_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发中，待联调；\n2、测试待排期",
+    "expect": "2026.01.30",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【吉游社交易平台】-存量用户结算业务从直付通调整为易收-20260316 ",
+    "link": "https://leiting.feishu.cn/docx/Y2zwdWO7PoTlDRxftVpcteMQnVg",
+    "submitter": "范洁敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00c5_3d8f042d-a1ed-4717-b716-ca025b27fa1g_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发中，测试待排期",
+    "expect": "2026.05.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【JoyboxSDK】-新增俄罗斯地区判定方法+封装pay方法的三方支付跳转逻辑-20260302 ",
+    "link": "https://leiting.feishu.cn/docx/Oxwmd99ZeowCgkxCK6ncBrddnWn",
+    "submitter": "林志伟",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00au_fa230dcf-6b0e-4411-a107-6d170636418g_32.webp",
+    "status": "进行中",
+    "update": "1、开发进行中，联调时间沟通中；\n2、测试待排期",
+    "expect": "2026.02.05",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【雷霆SDK】-OPPO新模式-新安装链路能力接入-20260226 ",
+    "link": "https://leiting.feishu.cn/docx/X0r3dVAOzoHuKBx5Z9Rc8vWtnrg",
+    "submitter": "邱单娜",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_fd075d3a-0640-4e8b-b181-d5e42158a4ag_32.webp",
+    "status": "进行中",
+    "update": "1、开发已完成\n2、测试验收中，等待OPPO配合处理问题后继续验收",
+    "expect": "2026.03.20",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【一体化SDK】-支持截屏&录屏功能-20260115 ",
+    "link": "https://leiting.feishu.cn/docx/JPk9dlgU0oKw4rxnGPhcG5LynPg",
+    "submitter": "兔力-陈勉",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0089_0f679e37-f815-4e22-be1e-7ef67539be3g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、客户端开发完成\n2、测试待排期",
+    "expect": "2026.02.13",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【一体化SDK】-国内迁移语音相关功能（实时语音+语音条）-20260115 ",
+    "link": "https://leiting.feishu.cn/docx/JtOUdr9yYoo4qox6AbGcwHF7n0c",
+    "submitter": "兔力-陈勉",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0089_0f679e37-f815-4e22-be1e-7ef67539be3g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "客户端开发&测试已完成，发版时间待评估\n",
+    "expect": "2026.02.13",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【PC启动器】-支持同时运行多款游戏-20260119 ",
+    "link": "https://leiting.feishu.cn/docx/IzzNdbrIloBYzzxGjnQc73LGn2g",
+    "submitter": "范洁敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00c5_3d8f042d-a1ed-4717-b716-ca025b27fa1g_32.webp",
+    "status": "进行中",
+    "update": "1、客户端开发完成；\n2、测试验收中，工期：2026.03.25~2026.03.27，部分问题已反馈开发进行修复",
+    "expect": "2026.03.18",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【雷霆SDK】-华为渠道商店跳转方式优化-20251206 ",
+    "link": "https://leiting.feishu.cn/docx/W6Hkd6LxRosFG6xyOcscbAV3n6c",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、客户端开发已完成；\n2、测试待排期",
+    "expect": "2025.12.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【雷霆SDK】-新版银联接口接入-20260202 ",
+    "link": "https://leiting.feishu.cn/docx/OBDmddoMPo7gL2x0gV5cgBngnXE",
+    "submitter": "林丽娟",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00sh_9f0ec190-f112-4f0d-a8a5-174239877d9g_32.webp",
+    "status": "进行中",
+    "update": "1、开发进行中；\n2、客户端待排期；\n3、测试待客户端排期后排期",
+    "expect": "2026.03.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【AI客服问答】-Cursor+Mcp优化与部署 -20260312 ",
+    "link": "https://leiting.feishu.cn/docx/LpU3dQyslo18gvxkq1kcSqpqnGh",
+    "submitter": "钟超平",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00i2_c7afcd0f-6071-4d24-849e-41724ff4460g_32.webp",
+    "status": "进行中",
+    "update": "1、前端组开发已完成；\n2、服务端待排期；\n3、测试待服务端排期后排期",
+    "expect": "2026.03.20",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.24"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【吉游社交易平台】-新用户结算业务从直付通调整为易收-20260316 ",
+    "link": "https://leiting.feishu.cn/docx/Y2zwdWO7PoTlDRxftVpcteMQnVg",
+    "submitter": "范洁敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00c5_3d8f042d-a1ed-4717-b716-ca025b27fa1g_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发中，工期：2026.03.24~2026.03.26；\n2、测试待排期",
+    "expect": "2026.05.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.24"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【雷霆SDK】-支付宝当面付接口迁移-20260225 ",
+    "link": "https://leiting.feishu.cn/docx/XSu7d0PqNo71tSxNGFCctccenYd",
+    "submitter": "张世鑫",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00kv_aaa38a7a-3d99-433a-9735-2ff4ed2d7d6g_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发已完成；\n2、运营支撑组任务转至[任务卡]【充值平台（国内）】-v4.1.8版本（新增限时累充返利活动）-20260205 开发\n3、测试待排期",
+    "expect": "2026.03.25",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.19"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【雷霆SDK】-微社区调用横竖屏切换功能异常排查-20260109 ",
+    "link": "https://leiting.feishu.cn/docx/JzoAdnoMqoQY0exP1tWchTf0nuf",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "1、客户端开发完成；\n2、测试待排期",
+    "expect": "2026.03.10",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.18"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【AI客服问答工具】-第二期优化汇总（需求二：管理端优化）-20260205 ",
+    "link": "https://leiting.feishu.cn/docx/IV7xd1uSsoSU9IxqrXHcHwXznlg",
+    "submitter": "钟超平",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00i2_c7afcd0f-6071-4d24-849e-41724ff4460g_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发中，工期因为需穿插制作[任务卡]【聚宝斋】-回归玩家选号推荐方案-20251113 ，拆分为两个时间段进行开发，工期1:2026.02.27~2026.03.09；工期2：2026.04.16~2026.05.06；\n2、前端组待排期；\n3、测试组待前端组排期后排期",
+    "expect": "2026.03.30",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.12"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【内容安全平台】-异步检测接口开发-20251023 ",
+    "link": "https://leiting.feishu.cn/docx/IOVwde02DoSE30xtbnNcGdxenHZ",
+    "submitter": "冯晓阳",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00vb_305d895f-7a54-47b1-a3ce-8477b2727beg_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发已完成；\n2、测试待排期",
+    "expect": "2025.11.21",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.05"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【客服工具】-iOS退款机器人提醒以及后台优化需求-20260123 ",
+    "link": "https://leiting.feishu.cn/docx/ZKFtdIywloaHRaxllFmcSTfpnwH",
+    "submitter": "曾文森",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00tg_dc92ad7a-c660-4861-a25d-f8c314f02adg_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发已完成；\n2、测试待排期",
+    "expect": "2026.02.27",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.02.05"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【杖剑传说（国内）】-苹果优惠券功能新增分支-20260127 ",
+    "link": "https://leiting.feishu.cn/docx/MP4Gdns16o0j6pxzcKMcMAvnnGc",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g_32.webp",
+    "status": "进行中",
+    "update": "1、客户端开发中，工期：2026.02.05~2026.02.06；\n2、测试待排期",
+    "expect": "2026.01.30",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.02.05"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【多媒体平台】-通用音频审核平台二期需求-20260120 ",
+    "link": "https://leiting.feishu.cn/docx/K7xjdfTXWozHlHxno9fcBLrSnBg",
+    "submitter": "冯晓阳",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00sj_eb9524b8-9bac-4e8a-a02c-56df5ae5566g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、服务端联调已完成，工期：2026.02.02~2026.02.02，开发时间待排期；\n2、前端组待排期",
+    "expect": "2026.03.01",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.02.04"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【雷霆中台】-账号安全漏洞修复-20251118",
+    "link": null,
+    "submitter": "卓超",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/v1/v2_680a91b5-ea9b-41c9-bf25-73b1fd24595g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "开发已完成，需求方验收中",
+    "expect": "2025.12.18",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【交易平台】-页面优化需求-20251124 ",
+    "link": "https://leiting.feishu.cn/docx/TmHcdZ1iVofHWkxGtFKceJX1nEP",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发已完成；\n2、部分需求需要调整，前端需要重新排期（等待@范洁敏产出补充方案）；\n3、测试待排期\n",
+    "expect": "2026.01.20",
+    "eta": "暂未排期",
+    "anomaly": "部分需求需要调整，前端需要重新排期（等待@范洁敏产出补充方案）；",
+    "updateDate": "2026.01.14"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【LTGM】-邮件发送优化需求（第二期）-20251014",
+    "link": null,
+    "submitter": "钱智强",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00b5_529dba68-7b55-4d0d-ab44-ffed9d910e1g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中\n",
+    "update": "开发已完成，测试待排期",
+    "expect": "2025.10.31",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【内容安全平台】-批量检测接口新增字段开发-20251020",
+    "link": null,
+    "submitter": "冯晓阳",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00sj_eb9524b8-9bac-4e8a-a02c-56df5ae5566g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "开发已完成，测试待排期\n",
+    "expect": "2025.11.07",
+    "eta": "暂未排期\n",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【手游基建（国内）】-手游账号自动登录接口-20251117",
+    "link": null,
+    "submitter": "李逸欢",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "开发已完成，等待测试排期验收\n",
+    "expect": "2026.01.15",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【游戏充值系统】-漏洞修复-海外V4统一升级签名校验-20251010 ",
+    "link": "https://leiting.feishu.cn/wiki/VCxOw2pqGin4dxkULqrcRQ6bnhf",
+    "submitter": "魏于博",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/a6c65e38-f796-4d07-b792-568931eac89g_32.webp",
+    "status": "进行中",
+    "update": "年会重新启动验收",
+    "expect": "2025.09.19",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2025.12.04"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【模板官网（国内）】-202602迭代-新闻内页主页面版本第三套-20260225 ",
+    "link": "https://leiting.feishu.cn/docx/DQoLdSCCRo4aqvxvSFBcvzIPnD2",
+    "submitter": "卓奕敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00bp_8b1fc1a2-1818-438d-b7db-66d69b663b5g_32.webp",
+    "status": "已排期",
+    "update": "前端组待排期，工期：2026.04.13~2026.04.14",
+    "expect": "2026.03.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.04.02"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【国内模板官网】-新增游戏角色图鉴布局-20260211 ",
+    "link": "https://leiting.feishu.cn/docx/UmnUd8fsgolDG8x2b8GcN5MOnOd",
+    "submitter": "卓奕敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00bp_8b1fc1a2-1818-438d-b7db-66d69b663b5g_32.webp",
+    "status": "已排期",
+    "update": "前端组待排期，工期：2026.04.08~2026.04.09",
+    "expect": "2026.03.16",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.04.02"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【雷霆manage后台】-苹果兑换码配置逻辑修改-20260304 ",
+    "link": "https://leiting.feishu.cn/docx/P1y6dCjjLoI9LmxV7jRcKgzZn2d",
+    "submitter": "温敏怡",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00vu_dbfd3f77-27cf-4507-9a45-aee3131bb12g_32.webp",
+    "status": "已排期",
+    "update": "1、服务端已排期，工期：2026.03.31~2026.03.31；\n2、测试待排期",
+    "expect": "2026.04.23",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.30"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【通用交易平台】-单游戏首页增加专区-20260310 ",
+    "link": "https://leiting.feishu.cn/docx/CakRdhMy3ogdq8xFmfdcfFYlnGd",
+    "submitter": "范洁敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00c5_3d8f042d-a1ed-4717-b716-ca025b27fa1g_32.webp",
+    "status": "已排期",
+    "update": "1、UI待排期\n2、前端占位已排期，工期：2026.03.27~2026.03.31；\n3、服务端待排期；\n4、测试组待服务端排期后排期；\n",
+    "expect": "2026.04.13",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【雷霆网站组】-CodeIgniter 框架后台权限控制安全漏洞修复-20260320 ",
+    "link": "https://my.feishu.cn/wiki/MfCrwngMNiJ8Xbk0rCOcv4NrnxQ",
+    "submitter": "卓超",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_680a91b5-ea9b-41c9-bf25-73b1fd24595g_32.webp",
+    "status": "已排期",
+    "update": "前端已排期，工期：2026.04.09~2026.04.10",
+    "expect": "2026.04.30",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.24"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "任务描述",
+    "link": null,
+    "submitter": "提单人",
+    "avatar": "",
+    "status": "实际进度",
+    "update": "本周情况同步",
+    "expect": "期望完成时间（需求方）",
+    "eta": "预计对外时间（技术中台）",
+    "anomaly": "异常情况"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【雷霆SDK】-鸿蒙登录方式优化-20260208 ",
+    "link": "https://leiting.feishu.cn/wiki/FyViwEdjWiGaStkXQXecVDY3ndf",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g_32.webp",
+    "status": "已上线",
+    "update": "2026.03.20上线",
+    "expect": "2026.02.13",
+    "eta": "2026.03.20",
+    "anomaly": "无",
+    "updateDate": "2026.03.23"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【AIGC】-AI赋能移动端应用自动化测试-20260120 ",
+    "link": "https://leiting.feishu.cn/docx/PU5udRYetoTzGIxHVRPckyyInTf",
+    "submitter": "林庆钿",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_2962c68e-6f19-4126-9fa5-09bcdaf737eg_32.webp",
+    "status": "已完成（无需发布）",
+    "update": "2026.03.20已完成（无需发布）",
+    "expect": "2026.03.31",
+    "eta": "2026.03.20",
+    "anomaly": "无",
+    "updateDate": "2026.03.20"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【雷霆SDK】-PCSDK-PC出包流程优化一期-20260126 ",
+    "link": "https://leiting.feishu.cn/docx/Cisxd8arSonowkxyY6PcBsK7nAc",
+    "submitter": "范洁敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00c5_3d8f042d-a1ed-4717-b716-ca025b27fa1g_32.webp",
+    "status": "进行中",
+    "update": "1、开发已完成，产品验收后问题较多，转测试协助验收；\n2、流程验收测试完成，使用实际项目出包进行验收，转至[任务卡]【九牧之野】-账密版本PC包验收-20260325 进行处理，验收时间待重新排期",
+    "expect": "2026.02.28",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.04.02"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【通用交易平台】-开通直付通流程、查询、商品排序优化-20260114 ",
+    "link": "https://leiting.feishu.cn/docx/EWG1d63yhoKw7ixEfmBcBiMonRF",
+    "submitter": "范洁敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00c5_3d8f042d-a1ed-4717-b716-ca025b27fa1g_32.webp",
+    "status": "进行中",
+    "update": "1、开发完成；\n2、测试外包（慧博云通），工期：2026.03.26~2026.03.27",
+    "expect": "2026.02.28",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.27"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【通用交易平台】-商品管理分享商品不带商品状态&微信分享需到指定商品页面-20260129 ",
+    "link": "https://leiting.feishu.cn/wiki/SX1vw7NRNiRl0GkQmbScEj2Mn2b",
+    "submitter": "范洁敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00c5_3d8f042d-a1ed-4717-b716-ca025b27fa1g_32.webp",
+    "status": "进行中",
+    "update": "1、开发完成；\n2、测试外包（慧博云通），排期评估中",
+    "expect": "2026.02.19",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【雷霆SDK】-安卓demo和出包支持-20260109 ",
+    "link": "https://leiting.feishu.cn/docx/TV0td85pHo8Lcmxo6Q6cHrItnjc",
+    "submitter": "林庆钿",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_2962c68e-6f19-4126-9fa5-09bcdaf737eg_32.webp",
+    "status": "进行中",
+    "update": "1、客户端进行中，进度80%，待与测试配合联调处理，完成时间待定\n2、测试待排期",
+    "expect": "2026.02.13",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【客服审核系统】-二期需求-20250921 ",
+    "link": "https://leiting.feishu.cn/docx/LjB5d1Rm8oIYeAxEt3wcUY8tnxu",
+    "submitter": "郑少鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00ct_ce2f5a55-1619-4a9e-8ba6-7491a76b4d6g_32.webp",
+    "status": "进行中",
+    "update": "1、前端&服务端联调中，预计2026.03.27完成联调\n2、测试待排期",
+    "expect": "2025.10.28",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【SDK基建】-midscenejs自动化测试-20260306 ",
+    "link": "https://leiting.feishu.cn/docx/JQuzdKJUZolunjxIsAscaiIdnEf",
+    "submitter": "邹志鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_f67dd627-c5c4-4d50-8852-de678e29bb6g_32.webp",
+    "status": "进行中",
+    "update": "开发进行中，持续试验中",
+    "expect": "2026.03.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【中台系统】-TapTap制造 调研-20260319 ",
+    "link": "https://my.feishu.cn/wiki/Uke7wXeWfiyNLekdWLbcniJqnXb",
+    "submitter": "潘虹余",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00se_7c57d48a-a441-4c6e-ab43-b60fd0d20efg_32.webp",
+    "status": "进行中",
+    "update": "服务端处理中",
+    "expect": "2026.03.27",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【雷霆+JoyBox】安卓Pixel 6a设备登录后顶部不显示欢迎提示语-20250704 ",
+    "link": "https://leiting.feishu.cn/docx/EZ1BdNgOoo8fZpxIzZrce3KgnfA",
+    "submitter": "林庆钿",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_04a3a62a-a84e-42ee-9c29-1b8eb38aab6g_32.webp",
+    "status": "进行中",
+    "update": "1、开发问题已修复，回归验收中；\n2、国内发版时间待评估",
+    "expect": "2025.09.30",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【业务预警系统】-配置中心埋点及预警补全-20260126 ",
+    "link": "https://leiting.feishu.cn/docx/Rogcd16LQo1sbTxfcOhc10PSnFd",
+    "submitter": "段旭",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/65275d63-954e-482c-8e91-afccc9a0843g_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发完成；\n2、测试待排期",
+    "expect": "2026.02.06",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.19"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【压测版本3.0】-适用最新版本重构工作台-20260305 ",
+    "link": "https://leiting.feishu.cn/docx/BEa6d6SiAoUvICxFqUgcj4e1nye",
+    "submitter": "徐梓健",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00i3_b0f5c829-116f-47ac-91e9-89bf28af319g_32.webp",
+    "status": "进行中",
+    "update": "测试进行中，预计2026.03.27完成",
+    "expect": "2026.03.20",
+    "eta": "2026.03.27",
+    "anomaly": "无",
+    "updateDate": "2026.03.19"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【国内分包工具&飞天系统】-媒体值打包优化（区分公测与非公测包体）-20251216 ",
+    "link": "https://leiting.feishu.cn/wiki/CUPnwzTHciVg2xkG3IHc8fO1n6d",
+    "submitter": "邹志鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_f67dd627-c5c4-4d50-8852-de678e29bb6g_32.webp",
+    "status": "进行中",
+    "update": "1、客户端开发完成\n2、测试待排期",
+    "expect": "2026.01.30",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.18"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【预警系统】-小游戏通知发货增加埋点预警-20260225 ",
+    "link": "https://leiting.feishu.cn/docx/Q4rJdoCipoqGSExyWnFcTQyLnJc",
+    "submitter": "潘虹余",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00se_7c57d48a-a441-4c6e-ab43-b60fd0d20efg_32.webp",
+    "status": "进行中",
+    "update": "1、服务端已完成；\n2、测试待排期",
+    "expect": "2026.03.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.18"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【雷霆SDK】-iOS服务端通知后置处理优化-20260303 ",
+    "link": "https://leiting.feishu.cn/docx/WJ4UdGIVbosJK8xBkrccKHMUnUc",
+    "submitter": "汪博",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/3a1a546d-3c60-4380-87e3-04c3ba2f3fdg_32.webp",
+    "status": "进行中",
+    "update": "1、开发已完成；\n2、测试待排期",
+    "expect": "2026.03.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.12"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【JoyboxSDK】-登录token校验增加设备维度校验-20260123 ",
+    "link": "https://leiting.feishu.cn/docx/TFvfd3IEBo3VQXxVvZQcku2znZe",
+    "submitter": "汪博",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/3a1a546d-3c60-4380-87e3-04c3ba2f3fdg_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发已完成；\n2、测试待排期",
+    "expect": "2026.02.06",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.12"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【业务预警系统】-用增核心业务埋点和预警（APP、微社区、会员）-20260126 ",
+    "link": "https://leiting.feishu.cn/docx/NDWGdw7p7o9Q4yxEnCscM9zcnch",
+    "submitter": "段旭",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/65275d63-954e-482c-8e91-afccc9a0843g_32.webp",
+    "status": "进行中",
+    "update": "1、开发已完成\n2、测试待排期",
+    "expect": "2026.02.27",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.02.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "【pc SDK】升级arms版本到v0.3.0-20251222 ",
+    "link": "https://leiting.feishu.cn/docx/L06Wde7WKou1ytxEU8ycJiQEnZg",
+    "submitter": "方涛",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00bu_b40cfc38-0823-4c3e-ab9d-e3543122a37g_32.webp",
+    "status": "进行中",
+    "update": "1、客户端开发已完成；\n2、外包（慧博云通）测试已完成，待开发修复Bug后回归验收；\n3、发版延期",
+    "expect": "2025.12.23",
+    "eta": "发版延期",
+    "anomaly": "经过自测阿里提供ARMS  v0.4.1版本，仍然存在弱网环境下，反复点击初始化/反初始化界面卡住问题。需要等待阿里解决问题并重新出包同步测试验收"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "【压测基建】探索接入监控面板 - 20250731 ",
+    "link": "https://leiting.feishu.cn/docx/RDpZdbk0Vog97zxCuKZcTVVWnVg",
+    "submitter": "高志威",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_a71a1393-6141-45fa-8003-b51207f6251g_32.webp",
+    "status": "进行中",
+    "update": "需求部分工作重新启动，2026.02.09启动，2026.02.13完成",
+    "expect": "2025.08.07",
+    "eta": "暂未排期\n",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "【雷霆SDK】Android历史问题修复-20251117 ",
+    "link": "https://leiting.feishu.cn/docx/THwldHLsfoUur7xzEUZcwmClnKP",
+    "submitter": "邹志鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00i2_078b62a1-bbe6-4953-8a73-328f6b5d5ebg_32.webp",
+    "status": "进行中",
+    "update": "1、开发已完成；\n2、测试待排期",
+    "expect": "2026.01.09",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【JoyboxSDK】-iOS 个人中心异常状况下关闭按钮无法点击-20250714 ",
+    "link": "https://leiting.feishu.cn/docx/SJV6dy75IoCoQ0xuObmcsKnnn9e?302from=wiki",
+    "submitter": "林庆钿",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00te_2962c68e-6f19-4126-9fa5-09bcdaf737eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、开发已完成；\n2、测试待排期",
+    "expect": "2025.08.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.01.08"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "【雷霆SDK】C++接口支持UE游戏接入-20250508",
+    "link": null,
+    "submitter": "邹志鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00i2_078b62a1-bbe6-4953-8a73-328f6b5d5ebg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、开发已完成；\n2、测试待排期\n",
+    "expect": "2025.08.15",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "【雷霆SDK】渠道登录增加ip三级防御",
+    "link": null,
+    "submitter": "段旭",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/v1/65275d63-954e-482c-8e91-afccc9a0843g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "开发已完成测试未排期",
+    "expect": "2025.08.29",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "【雷霆SDK】异常订单上报接口同步更新订单result表",
+    "link": null,
+    "submitter": "段旭",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/v1/65275d63-954e-482c-8e91-afccc9a0843g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "开发已完成，等待测试排期验收",
+    "expect": "2025.11.20",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【短信系统】-上行短信新增灾备供应商（聚梦）-20251021",
+    "link": null,
+    "submitter": "兔力-陈勉",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_0089_0f679e37-f815-4e22-be1e-7ef67539be3g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "开发完成，等待测试验收，测试未排期\n\n",
+    "expect": "2025.11.28",
+    "eta": "暂未排期\n",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【出包工具】-Android Jenkins出包可支持直接安装-20260311 ",
+    "link": "https://leiting.feishu.cn/docx/AXN8desqyoT4BrxSLV3cGT2Mnzh",
+    "submitter": "林庆钿",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00te_2962c68e-6f19-4126-9fa5-09bcdaf737eg_32.webp",
+    "status": "已排期",
+    "update": "1、客户端已排期，工期：2026.03.30~2026.03.31；\n2、测试待排期",
+    "expect": "2026.03.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.25"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（外部需求）",
+    "task": "任务描述",
+    "link": null,
+    "submitter": "提单人",
+    "avatar": "",
+    "status": "实际进度",
+    "update": "本周情况同步",
+    "expect": "期望完成时间（需求方）",
+    "eta": "预计对外时间（技术中台）",
+    "anomaly": "异常情况"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（外部需求）",
+    "task": "[任务卡]【海外模板官网】-近期迭代汇总-20260127 ",
+    "link": "https://leiting.feishu.cn/docx/IIvqdsBRuoBpR9xWE4ec99tNnXb",
+    "submitter": "卓奕敏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00bp_8b1fc1a2-1818-438d-b7db-66d69b663b5g_32.webp",
+    "status": "进行中",
+    "update": "前端组开发中，工期：2026.04.01~2016.04.02",
+    "expect": "2026.03.23",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.04.01"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（外部需求）",
+    "task": "[任务卡]【通用GM（海外）】-审批流逻辑复用海外+邮件列表小调整-20260202 ",
+    "link": "https://leiting.feishu.cn/docx/VdHDdqTwyoz7SbxhwOWcRe7Gnsg",
+    "submitter": "兔力-陈勉",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0089_0f679e37-f815-4e22-be1e-7ef67539be3g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、前端开发中，工期：2026.03.23~2016.03.27；\n2、服务端开发中，工期：2026.03.23~2016.04.03；\n3、测试待排期",
+    "expect": "2026.03.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（外部需求）",
+    "task": "【伊洛纳海外】封装升级Cocos版本JoyBoxSDK-20251125\n",
+    "link": "https%3A%2F%2Fleiting.feishu.cn%2Fdocx%2FR4Fkdb1Jdo6Hloxyjkmchm2HnAg",
+    "submitter": "邹志鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00i2_078b62a1-bbe6-4953-8a73-328f6b5d5ebg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "@郑少鹏已出SDK包，待研发出包后进行验收",
+    "expect": "2025.12.05",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（外部需求）",
+    "task": "[任务卡]【Joybox SDK】-欧盟隐私政策弹窗优化（一期）-20260312  ",
+    "link": "https://leiting.feishu.cn/wiki/PZwYwqBwjieXeikIRWfcOyMFnJg",
+    "submitter": "彭鑫尧",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00tb_7c160841-f0b2-4b5a-97bf-1219c832dd2g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、开发已完成；\n2、测试验收中，工期：2026.03.24~2016.03.27\n3、发版时间延至2026.03.30",
+    "expect": "2026.03.20",
+    "eta": "2026.03.30",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（外部需求）",
+    "task": "[任务卡]【JoyBoxSDK】-PC SDK支持一体化接入-20260312 ",
+    "link": "https://leiting.feishu.cn/docx/A5pNdB38ToOh9exHmJwc0MOrnIL",
+    "submitter": "范洁敏",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00c5_3d8f042d-a1ed-4717-b716-ca025b27fa1g~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、客户端开发中，工期：2026.03.16~2026.03.19；\n2、测试带排期",
+    "expect": "2026.03.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.19"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（外部需求）",
+    "task": "[任务卡]【海外公共】-新增发送邮件接口-20260202 ",
+    "link": "https://leiting.feishu.cn/docx/TjVkdiKr8ormRoxKSbqc96zmnSd",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "开发已完成，验收暂停中，后续与[任务卡]【三方支付网站（海外）】-v4.1.6版本-自动化预警功能二期&页签优化-20260225 一起验收上线",
+    "expect": "2026.02.28",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.12"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（外部需求）",
+    "task": "[任务卡]【JoyboxSDK】-谷歌美国地区判定功能-安全问题修复-20251127 ",
+    "link": "https://leiting.feishu.cn/docx/EqKadeQtHoLi2yxsyHkc3VMEn7b",
+    "submitter": "卓超",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_680a91b5-ea9b-41c9-bf25-73b1fd24595g_32.webp",
+    "status": "进行中",
+    "update": "开发已完成，需求方待验收",
+    "expect": "2025.12.31",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.12"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（外部需求）",
+    "task": "[任务卡]【海外综合】判定用户的地区归属地相关需求（一二批需求汇总）-20251217 ",
+    "link": "https://leiting.feishu.cn/docx/ISGddZ5Kno4yUTxpVyvcVtmlnGg",
+    "submitter": "张世鑫",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00kv_aaa38a7a-3d99-433a-9735-2ff4ed2d7d6g_32.webp",
+    "status": "进行中\n",
+    "update": "1、客户端服务端开发完成；\n2、测试待排期",
+    "expect": "2026.01.30",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.05"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（外部需求）",
+    "task": "[任务卡]【JoyboxSDK】-苹果退款意向标记-20251127 ",
+    "link": "https://leiting.feishu.cn/docx/CYlRd6oFJoWF8AxlzLdcIyppnCu",
+    "submitter": "温敏怡",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00gp_baa20a55-f8c4-4c58-918c-cd9c7ec673bg_32.webp",
+    "status": "进行中\n",
+    "update": "1、服务端开发已完成，测试待排期",
+    "expect": "2026.03.27",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2025.12.25"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（外部需求）",
+    "task": "【新加坡SDK】订单表历史数据迁移 ",
+    "link": "https://leiting.feishu.cn/docx/IDsidjhYjofWZ9xLj7TcM3YSnBf?302from=wiki",
+    "submitter": "汪博",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/3a1a546d-3c60-4380-87e3-04c3ba2f3fdg_32.webp",
+    "status": "进行中\n",
+    "update": "1、服务端开发已完成；\n2、测试待排期",
+    "expect": "2025.11.29",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（内部需求）",
+    "task": "任务描述",
+    "link": null,
+    "submitter": "提单人",
+    "avatar": "",
+    "status": "实际进度",
+    "update": "本周情况同步",
+    "expect": "期望完成时间（需求方）",
+    "eta": "预计对外时间（技术中台）",
+    "anomaly": "异常情况"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（内部需求）",
+    "task": "[任务卡]【海外综合】-各游戏预发布环境搭建-20260120 ",
+    "link": "https://leiting.feishu.cn/docx/WjnddP7BCok0GIx2qTEcBAGQnhf",
+    "submitter": "兔力-陈勉",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_0089_0f679e37-f815-4e22-be1e-7ef67539be3g_32.webp",
+    "status": "进行中",
+    "update": "1、前端组开发已完成；\n2、服务端、运营支撑组待排期；\n3、测试待所有开发任务排期后排期",
+    "expect": "2026.02.27",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.24"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（内部需求）",
+    "task": "[任务卡]【雷霆+JoyBox】安卓Pixel 6a设备登录后顶部不显示欢迎提示语-20250704 ",
+    "link": "https://leiting.feishu.cn/docx/EZ1BdNgOoo8fZpxIzZrce3KgnfA",
+    "submitter": "林庆钿",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_04a3a62a-a84e-42ee-9c29-1b8eb38aab6g_32.webp",
+    "status": "进行中",
+    "update": "1、开发问题已修复，回归验收中\n2、发版时间待评估",
+    "expect": "2025.09.30",
+    "eta": "暂未排期",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（内部需求）",
+    "task": "[任务卡]【JoyBoxSDK】-3.0.0版本更新计划-20251021",
+    "link": null,
+    "submitter": "邹志鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00i2_078b62a1-bbe6-4953-8a73-328f6b5d5ebg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、分阶段更新：\n第四批次：已出包，待研发返回包体验收",
+    "expect": "2025.12.31",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-海外（内部需求）",
+    "task": "【JoyBoxSDK】v3.1.0版本需求-20251110",
+    "link": null,
+    "submitter": "邹志鹏",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/v1/v3_00i2_078b62a1-bbe6-4953-8a73-328f6b5d5ebg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、开发&联调（Android&iOS）已完成，epic充值校验接口待联调验收；\n2、测试待排期",
+    "expect": "2025.11.30",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【微社区&会员APP】-关闭修改话题通知-202603231350 ",
+    "link": "https://my.feishu.cn/docx/C6ordCHq1o511cx3ryHc6O4qn3g",
+    "submitter": "张世鑫",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00kv_aaa38a7a-3d99-433a-9735-2ff4ed2d7d6g_32.webp",
+    "status": "已上线",
+    "update": "2026.03.27已上线",
+    "expect": "2026.03.27",
+    "eta": "2026.03.25",
+    "anomaly": "无",
+    "updateDate": "2026.03.27"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【业务预警系统】-用增核心业务埋点和预警（模板活动）-20260126  ",
+    "link": "https://leiting.feishu.cn/wiki/EbrUwK99Eib0nukuMs8cvaBYnUh",
+    "submitter": "段旭",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/65275d63-954e-482c-8e91-afccc9a0843g_32.webp",
+    "status": "待上线",
+    "update": "开发&测试已完成，待上线，发版时间待评估",
+    "expect": "2026.02.27",
+    "eta": "2026.02.27",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【业务预警系统】-用增核心业务埋点和预警（积分商城）-20260126  ",
+    "link": "https://leiting.feishu.cn/wiki/CbS5wTgTmiSLb7krI3icKxHgnrc",
+    "submitter": "段旭",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/65275d63-954e-482c-8e91-afccc9a0843g_32.webp",
+    "status": "待上线",
+    "update": "开发&测试已完成，待上线，发版时间待评估",
+    "expect": "2026.03.06",
+    "eta": "2026.02.27",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【雷霆会员APP】-V2.0游戏资料卡优化-20260121 ",
+    "link": "https://leiting.feishu.cn/docx/CR3cdCfbnoHBLBx1PrUcPHJEnth",
+    "submitter": "李逸欢",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "待上线",
+    "update": "开发&测试已完成，待上线，发版时间待评估",
+    "expect": "2026.01.30",
+    "eta": "2026.01.30",
+    "anomaly": "无",
+    "updateDate": "2026.03.12"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【业务预警系统】-用增核心业务埋点和预警（福利站）-20260126 ",
+    "link": "https://leiting.feishu.cn/docx/Pd77dOmi8oLpjixWYdxcRQEanCc",
+    "submitter": "段旭",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/65275d63-954e-482c-8e91-afccc9a0843g_32.webp",
+    "status": "进行中",
+    "update": "1、开发已完成；\n2、测试已排期，工期：2026.03.30~2026.04.03",
+    "expect": "2026.02.27",
+    "eta": "2026.02.27",
+    "anomaly": "无",
+    "updateDate": "2026.03.27"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【国内充值平台】-单商品合并加购功能-20260317 ",
+    "link": "https://my.feishu.cn/docx/IbEvdL7bgohlMSxWLhVc4UxxnWd",
+    "submitter": "李逸欢",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、开发进行中，联调时间待排期；\n2、测试待排期",
+    "expect": "2026.03.27",
+    "eta": "2026.04.28",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【用增系统】-用增系统账号和登录拆分-20260319 ",
+    "link": "https://my.feishu.cn/wiki/EyJowhogbiT9pDklM80czC5an5b",
+    "submitter": "段旭",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/65275d63-954e-482c-8e91-afccc9a0843g_32.webp",
+    "status": "进行中",
+    "update": "1、服务端开发中，工期：2026.03.23~2026.04.03；\n2、服务端其他子任务待排期；\n3、测试待排期\n",
+    "expect": "2026.03.27",
+    "eta": "2026.07.01",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【用增基建】-调研使用claude code迁移登录接口-20260319 ",
+    "link": "https://my.feishu.cn/wiki/PghgwYROeiQM13kOBZxcX0WAnZg",
+    "submitter": "潘虹余",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00se_7c57d48a-a441-4c6e-ab43-b60fd0d20efg_32.webp",
+    "status": "进行中",
+    "update": "开发进行中，预计2026.03.27完成",
+    "expect": "2026.03.27",
+    "eta": "2026.03.27",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【抖店发货系统】-增加“去使用”功能回调url-20260228 ",
+    "link": "https://leiting.feishu.cn/docx/VLCtdhF4Ko9DrixJ9xncgI3Znad",
+    "submitter": "杜婕",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00rp_f2e6da10-23b2-4560-a971-72e6f0a3aeeg_32.webp",
+    "status": "进行中",
+    "update": "1、开发进行中；\n2、测试待排期",
+    "expect": "2026.03.27",
+    "eta": "2026.03.31",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【抖店小程序】-增加抖店小程序配置后台+活动模板改造-提单日期 ",
+    "link": "https://leiting.feishu.cn/docx/EmGHdzmgsoNbgWxiHUgc7oMQnce",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "1、开发已完成；\n2、测试待排期",
+    "expect": "2026.03.04",
+    "eta": "2026.03.05",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【积分商城（国内）】-配置商品新增审批流、操作记录-20260225 ",
+    "link": "https://leiting.feishu.cn/docx/O8i6dHjJNouqixxymVsctAB5nC2",
+    "submitter": "李逸欢",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、用增开发中，预计2026.04.03完成；\n2、测试待排期",
+    "expect": "2026.03.27",
+    "eta": "2026.03.31",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【用增组合活动模板】-调整统计模块展示逻辑-20260205 ",
+    "link": "https://leiting.feishu.cn/docx/OP6ddo3FnolQTvxmZ30cpTrYnEg",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "1、开发完成；\n2、测试待排期",
+    "expect": "2026.04.01",
+    "eta": "2026.04.01",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【充值平台（国内）】-v4.1.8版本（新增限时累充返利活动）-20260205 ",
+    "link": "https://leiting.feishu.cn/docx/U2e7dFrMLolPDVxOu8ScvH3inAe",
+    "submitter": "李逸欢",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、用增开发中；\n3、测试已排期，工期：2026.04.01~2026.04.03",
+    "expect": "2026.03.20",
+    "eta": "2026.03.31",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【雷霆村系统】-会员积分商城P0级压测计划-20260225 ",
+    "link": "https://leiting.feishu.cn/docx/D1bEdkniXoKdfFxj2VYcEgpinEg",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "压测环境搭建完毕，验收无问题，待测试",
+    "expect": "2026.02.28",
+    "eta": "2026.03.31",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【用增基建（国内）】-用增社区内容拆分-20260304 ",
+    "link": "https://leiting.feishu.cn/docx/BUYrdXa5Goyt7SxQ1qNceiIWnbd",
+    "submitter": "肖长发",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v3_00i2_d6438960-3907-4dff-9b75-2181fa73dbfg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、开发已完成；\n2、测试已排期，工期：2026.03.30~2026.04.01",
+    "expect": "2026.03.13",
+    "eta": "2026.03.27",
+    "anomaly": "无",
+    "updateDate": "2026.03.24"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【用增社区小程序】-提示文案调整-20260317 ",
+    "link": "https://leiting.feishu.cn/docx/MdZadSk0PomnPwxhl6sc8KNUn5g",
+    "submitter": "李逸欢",
+    "avatar": "https://s1-imfile.feishucdn.com/static-resource/v1/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg~?image_size=72x72&cut_type=default-face&quality=&format=jpeg&sticker_format=.webp",
+    "status": "进行中",
+    "update": "1、开发已完成；\n2、测试待排期",
+    "expect": "2026.03.20",
+    "eta": "2026.03.18",
+    "anomaly": "无",
+    "updateDate": "2026.03.19"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【雷霆会员APP】-更改帖子刷新逻辑和生日弹窗逻辑-20260128 ",
+    "link": "https://leiting.feishu.cn/docx/OQgadSGddok1O7xsPZCcKOfenoe",
+    "submitter": "91-肖文琛",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v3_00u1_86752ec1-52cf-4a10-831d-11cdf36b0a9g_32.webp",
+    "status": "进行中",
+    "update": "1、客户端开发已完成；\n2、测试待排期",
+    "expect": "2026.02.02",
+    "eta": "2026.02.02",
+    "anomaly": "无",
+    "updateDate": "2026.03.03"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-海外",
+    "task": "任务描述",
+    "link": null,
+    "submitter": "提单人",
+    "avatar": "",
+    "status": "实际进度",
+    "update": "本周情况同步",
+    "expect": "期望完成时间（需求方）",
+    "eta": "预计对外时间（技术中台）",
+    "anomaly": "异常情况"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-海外",
+    "task": "[任务卡]【三方支付（海外）】-v4.1.7（判定用户归属地相关需求）-20260205 ",
+    "link": "https://leiting.feishu.cn/docx/SjwjdHTlroeuDUxjvrecoJD7nEh",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "1、用增开发中，预计2026.04.02开发完成；\n2、测试已排期，工期：2026.04.21~2026.04.22",
+    "expect": "2026.03.26",
+    "eta": "2026.03.26",
+    "anomaly": "无",
+    "updateDate": "2026.04.01"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-海外",
+    "task": "[任务卡]【海外积分商城】-V1.0产品需求-20260120 ",
+    "link": "https://leiting.feishu.cn/docx/F9JbdcofdowXhnxjl0uc9rdknxd",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "1、开发已完成；\n2、测试验收中，工期：2026.03.18~2026.03.30",
+    "expect": "2026.02.27",
+    "eta": "2026.03.26",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-海外",
+    "task": "[任务卡]【海外VIP系统】-V1.2版本需求-20260302 ",
+    "link": "https://leiting.feishu.cn/docx/MPTkdJ2EJocNLcxidTFcstNpnfd",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "1、用增前端组开发中，工期：2026.03.26~2026.03.27；\n2、用增服务端已排期，工期：2026.04.09~2026.04.15；\n3、测试待排期",
+    "expect": "2026.04.15",
+    "eta": "2026.04.15",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-海外",
+    "task": "[任务卡]【三方支付网站（海外）】-v4.1.6版本-自动化预警功能二期&页签优化-20260225 ",
+    "link": "https://leiting.feishu.cn/docx/J3pedANL2ovfH7xnqJgcyYsFnSe",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "1、用增前端组已排期，工期：2026.03.27~2026.03.30；\n2、用增服务端开发中，工期：2026.03.25~2026.03.30；\n2、测试待排期",
+    "expect": "2026.03.19",
+    "eta": "2026.03.13",
+    "anomaly": "无",
+    "updateDate": "2026.03.26"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-海外",
+    "task": "[任务卡]【三方充值网站（海外）】-匹配一念逍遥欧美订单的国家地区-20260313 ",
+    "link": "https://leiting.feishu.cn/docx/E9thdvGyXoAbcPxZCQZc6Zz9nQ3",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "1、用增开发已完成；\n2、测试待排期",
+    "expect": "2026.03.17",
+    "eta": "2026.03.17",
+    "anomaly": "无",
+    "updateDate": "2026.03.19"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-海外",
+    "task": "[任务卡]【三方支付（海外）】-v4.1.4版本-增加海外积分商城相关功能-20260210 ",
+    "link": "https://leiting.feishu.cn/docx/PAg6dnzodonktQxPbYWcEFfEnxh",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "进行中",
+    "update": "1、用增开发已完成；\n2、测试验收，工期：2026.03.18~2026.03.30",
+    "expect": "2026.03.26",
+    "eta": "2026.03.26",
+    "anomaly": "无",
+    "updateDate": "2026.03.19"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-海外",
+    "task": "[任务卡]【三方支付网站（海外）】-v4.1.5版本-美区专属链接-20260303 ",
+    "link": "https://leiting.feishu.cn/docx/U2tsdD58joqVRKxmGZPcTJMmnSg",
+    "submitter": "李逸欢",
+    "avatar": "https://s3-imfile.feishucdn.com/static-resource/avatar/v2_1295402f-5fc7-4573-bec3-ed93ea3196eg_32.webp",
+    "status": "已排期",
+    "update": "1、用增前端组已排期，工期：2026.03.23~2026.03.24；\n2、用增服务端已排期，工期：2026.03.23~2026.03.24；\n3、测试待排期",
+    "expect": "2026.03.20",
+    "eta": "2026.03.31",
+    "anomaly": "无",
+    "updateDate": "2026.03.19"
+  }
+];
+
+const STATUS_MAP = {
+  "已上线":   ["status-online",    "已上线"],
+  "进行中":   ["status-ongoing",   "进行中"],
+  "待排期":   ["status-pending",   "待排期"],
+  "暂未排期": ["status-pending",   "暂未排期"],
+  "已完成":   ["status-done",      "已完成"],
+  "已排期":   ["status-scheduled", "已排期"],
+  "待上线":   ["status-online",    "待上线"],
+  "停滞":     ["status-other",     "停滞"],
+};
+
+// 状态 → CSS class（用于 select 着色）
+const STATUS_CLASS = {
+  "已上线": "s-online", "已完成": "s-done", "待上线": "s-online",
+  "进行中": "s-ongoing",
+  "已排期": "s-scheduled",
+  "待排期": "s-pending", "暂未排期": "s-pending",
+  "停滞":   "s-stalled",
+};
+function getStatusClass(s) { return STATUS_CLASS[s] || "s-other"; }
+
+// 所有状态选项
+const ALL_STATUSES = ["已上线","待上线","进行中","已排期","待排期","暂未排期","已完成","停滞"];
+
+// 日期转换："2026.04.30" → "2026-04-30"（供 date input 使用）
+function toDateInput(s) {
+  if (!s) return "";
+  const m = s.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+  if (!m) return "";
+  return `${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`;
+}
+// "2026-04-30" → "2026.04.30"
+function fromDateInput(s) {
+  if (!s) return "";
+  return s.replace(/-/g, ".");
+}
+
+// 初始化 updateDate：从 update 文本提取最新日期
+ALL_DATA.forEach(r => {
+  if (!r.updateDate) {
+    const m = (r.update || "").match(/\d{4}[.\-\/]\d{1,2}[.\-\/]\d{1,2}/g);
+    r.updateDate = m ? m[m.length - 1].replace(/[\/\-]/g, ".") : "";
+  }
+});
+
+// 清除无效数据（无任务卡名称 或 无提单人）
+for (let i = ALL_DATA.length - 1; i >= 0; i--) {
+  if (!ALL_DATA[i].task?.trim() || !ALL_DATA[i].submitter?.trim()) {
+    ALL_DATA.splice(i, 1);
+  }
+}
+
+// 当周范围判断
+function getCurrentWeekRange() {
+  const now = new Date();
+  const day = now.getDay();
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+  mon.setHours(0, 0, 0, 0);
+  const sun = new Date(mon);
+  sun.setDate(mon.getDate() + 6);
+  sun.setHours(23, 59, 59, 999);
+  return { start: mon, end: sun };
+}
+
+function isCurrentWeek(dateStr) {
+  if (!dateStr) return false;
+  const m = dateStr.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+  if (!m) return false;
+  const d = new Date(+m[1], +m[2] - 1, +m[3]);
+  const { start, end } = getCurrentWeekRange();
+  return d >= start && d <= end;
+}
+
+function badge(status) {
+  const [cls, label] = STATUS_MAP[status] || ["status-other", status || "—"];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function avatarHtml(name, url) {
+  const init = name ? name[0] : "?";
+  return url
+    ? `<img class="avatar" src="${url}" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="avatar-fallback" style="display:none">${init}</div>`
+    : `<div class="avatar-fallback">${init}</div>`;
+}
+
+function render(data) {
+  const container = document.getElementById("cards-container");
+  if (!data.length) {
+    container.innerHTML = '<div class="empty">暂无符合条件的记录</div>';
+    document.getElementById("result-count").textContent = "0 条";
+    return;
+  }
+
+  // 按提单人分组
+  const STATUS_SORT_ORDER = ["已上线","已完成","待上线","进行中","已排期","停滞"];
+  const statusRank = s => { const i = STATUS_SORT_ORDER.indexOf(s); return i === -1 ? 99 : i; };
+  // 进度更新时间转数值，越新越大
+  const dateVal = d => {
+    if (!d) return 0;
+    const m = d.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+    return m ? parseInt(m[1])*10000 + parseInt(m[2])*100 + parseInt(m[3]) : 0;
+  };
+  const groups = {};
+  for (const r of data) {
+    if (!groups[r.submitter]) groups[r.submitter] = { avatar: r.avatar, items: [] };
+    groups[r.submitter].items.push(r);
+  }
+  // 每个提单人内部按状态排序
+  for (const g of Object.values(groups)) {
+    g.items.sort((a, b) => {
+      const sr = statusRank(a.status) - statusRank(b.status);
+      if (sr !== 0) return sr;
+      return dateVal(b.updateDate) - dateVal(a.updateDate);
+    });
+  }
+
+  let totalCount = 0;
+  const html = Object.entries(groups)
+    .sort(([a],[b]) => a.localeCompare(b, "zh"))
+    .map(([name, group]) => {
+      totalCount += group.items.length;
+      const rowsHtml = group.items.map(item => {
+        const idx = ALL_DATA.indexOf(item);
+        const TASK_MAX = 49;
+        const taskText = item.task.length > TASK_MAX ? item.task.slice(0, TASK_MAX) + '...' : item.task;
+        const taskDisplay = item.link
+          ? `<a href="${item.link}" target="_blank" class="task-link" title="${item.task}">${taskText}</a>`
+          : `<span class="task-no-link" title="${item.task}">${taskText}</span>`;
+        const update = (item.update || "—").replace(/\n/g, "<br>");
+        const anomalyFull = item.anomaly || "无";
+        const anomalyCls = (anomalyFull !== "无" && anomalyFull !== "" && anomalyFull !== "—") ? "anomaly-warn" : "";
+        const ANOMALY_LIMIT = 20;
+        const anomalyCell = anomalyFull.length > ANOMALY_LIMIT
+          ? `<span class="anomaly-short ${anomalyCls}">${anomalyFull}</span><button class="btn-anomaly-detail" data-anomaly="${anomalyFull.replace(/"/g,'&quot;')}">查看详情</button>`
+          : `<span class="${anomalyCls}">${anomalyFull}</span>`;
+        const sc = getStatusClass(item.status);
+        const statusOpts = ALL_STATUSES.map(s =>
+          `<option value="${s}"${s===item.status?" selected":""}>${s}</option>`).join("");
+        const udVal = toDateInput(item.updateDate || "");
+        return `<tr>
+          <td class="col-check"><input type="checkbox" class="row-checkbox" data-idx="${idx}"></td>
+          <td class="col-task">${taskDisplay}</td>
+          <td class="col-status"><select class="status-select ${sc}" data-idx="${idx}">${statusOpts}</select></td>
+          <td class="col-update">${update}</td>
+          <td class="col-update-date"><input type="date" class="inline-date" data-idx="${idx}" data-field="updateDate" value="${udVal}" title="进度更新时间"></td>
+          <td class="col-date"><input type="date" class="inline-date" data-idx="${idx}" data-field="expect" value="${toDateInput(item.expect)}" title="期望完成时间"></td>
+          <td class="col-date"><input type="date" class="inline-date" data-idx="${idx}" data-field="eta" value="${(item.eta && item.eta !== '暂未排期') ? toDateInput(item.eta) : ''}" title="发版时间"></td>
+          <td class="col-anomaly">${anomalyCell}</td>
+          <td class="col-action">
+            <button class="btn-edit" data-idx="${idx}" title="编辑">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11 2l3 3-8 8H3v-3l8-8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="btn-delete" data-idx="${idx}" title="删除">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 10h8l1-10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </td>
+        </tr>`;
+      }).join("");
+
+      return `
+      <section class="person-section">
+        <div class="person-header">
+          <div class="person-identity">
+            ${avatarHtml(name, group.avatar)}
+            <span class="person-name">${name}</span>
+          </div>
+          <span class="person-count">${group.items.length} 条需求</span>
+        </div>
+        <div class="task-list">
+          <table class="task-table">
+            <thead><tr>
+              <th class="col-check"><input type="checkbox" class="row-checkbox header-check" title="全选"></th>
+              <th class="col-task">任务卡</th>
+              <th class="col-status">状态</th>
+              <th class="col-update">本周进展</th>
+              <th class="col-update-date">进度更新时间</th>
+              <th class="col-date">期望完成时间</th>
+              <th class="col-date">发版时间</th>
+              <th class="col-anomaly">异常情况</th>
+              <th class="col-action"></th>
+            </tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+      </section>`;
+    }).join("");
+
+  container.innerHTML = html;
+  document.getElementById("result-count").textContent = `共 ${totalCount} 条`;
+}
+
+// ── 本周动态 ──
+const SUMMARY_STATUS_ORDER = [
+  { label: "已上线 / 已完成（无需发布）", statuses: ["已上线","已完成"], dot: "#10b981" },
+  { label: "待上线",                      statuses: ["待上线"],          dot: "#06b6d4" },
+  { label: "进行中",                      statuses: ["进行中"],          dot: "#3b82f6" },
+  { label: "已排期",                      statuses: ["已排期"],          dot: "#8b5cf6" },
+  { label: "停滞",                        statuses: ["停滞"],            dot: "#ef4444" },
+];
+
+function renderSummary() {
+  const body = document.getElementById("summary-body");
+  let totalShown = 0;
+
+  // 按当前侧边栏/筛选选中的工作室-游戏 + 当周 updateDate 过滤
+  const { studio, game } = getFilters();
+  let scopeData = ALL_DATA.filter(r => isCurrentWeek(r.updateDate));
+  if (studio) scopeData = scopeData.filter(r => r.studio === studio);
+  if (game)   scopeData = scopeData.filter(r => r.game   === game);
+
+  // 更新标题提示
+  const titleEl = document.querySelector(".summary-header-title");
+  const { start, end } = getCurrentWeekRange();
+  const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
+  const weekRange = `${fmt(start)}~${fmt(end)}`;
+  if (titleEl) {
+    const scope = game ? game : studio ? studio : "全部工作室";
+    titleEl.textContent = `${scope} · 本周动态（${weekRange}）`;
+  }
+
+  // 按工作室 → 游戏分组
+  const studioMap = {};
+  scopeData.forEach(r => {
+    const s = r.studio || "（未分类）";
+    const g = r.game   || "（未分类）";
+    if (!studioMap[s]) studioMap[s] = {};
+    if (!studioMap[s][g]) studioMap[s][g] = [];
+    studioMap[s][g].push(r);
+  });
+
+  const studioHtml = Object.entries(studioMap).map(([studio, gameMap]) => {
+    const gamesHtml = Object.entries(gameMap).map(([game, items]) => {
+      const statusGroupsHtml = SUMMARY_STATUS_ORDER.map(sg => {
+        const group = items.filter(r => sg.statuses.includes(r.status));
+        if (!group.length) return "";
+        totalShown += group.length;
+        const rows = group.map(item => {
+          const TASK_MAX = 49;
+          const taskText = item.task.length > TASK_MAX ? item.task.slice(0, TASK_MAX) + '...' : item.task;
+          const taskDisplay = item.link
+            ? `<a href="${item.link}" target="_blank" class="task-link" title="${item.task}">${taskText}</a>`
+            : `<span title="${item.task}">${taskText}</span>`;
+          const updateText = (item.update || "—").replace(/\n/g, " ").trim();
+          return `<tr>
+            <td class="s-col-task">${taskDisplay}</td>
+            <td class="s-col-status"><span class="badge ${STATUS_MAP[item.status]?.[0]||"status-other"}">${item.status||"—"}</span></td>
+            <td class="s-col-update"><span class="s-update-text">${updateText}</span></td>
+          </tr>`;
+        }).join("");
+        return `<div class="summary-group">
+          <div class="summary-group-hd">
+            <span class="summary-group-dot" style="background:${sg.dot}"></span>
+            <span class="summary-group-name">${sg.label}</span>
+            <span class="summary-group-cnt">${group.length} 条</span>
+          </div>
+          <table class="summary-table"><tbody>${rows}</tbody></table>
+        </div>`;
+      }).join("");
+      if (!statusGroupsHtml) return "";
+      return `<div class="summary-game">
+        <div class="summary-game-hd">${game}</div>
+        ${statusGroupsHtml}
+      </div>`;
+    }).join("");
+    if (!gamesHtml) return "";
+    return `<div class="summary-studio">
+      <div class="summary-studio-hd">${studio}</div>
+      ${gamesHtml}
+    </div>`;
+  }).join("");
+
+  body.innerHTML = studioHtml || '<div class="empty" style="padding:24px">暂无数据</div>';
+  document.getElementById("summary-total").textContent = `${totalShown} 条`;
+}
+
+function getFilters() {
+  return {
+    studio:    document.getElementById("f-studio").value,
+    game:      document.getElementById("f-game").value,
+    submitter: document.getElementById("f-submitter").value,
+    search:    document.getElementById("f-search").value.trim(),
+    status:    document.getElementById("f-status").value,
+  };
+}
+
+function updateSelectStyle(id) {
+  const el = document.getElementById(id);
+  if (el.value) el.classList.add("has-value");
+  else el.classList.remove("has-value");
+}
+
+function applyFilter() {
+  const { studio, game, submitter, search, status } = getFilters();
+  const kw = search.toLowerCase();
+  const filtered = ALL_DATA.filter(r =>
+    (!studio    || r.studio    === studio)    &&
+    (!game      || r.game      === game)      &&
+    (!submitter || r.submitter === submitter) &&
+    (!status    || r.status    === status)    &&
+    (!kw        || (r.task || "").toLowerCase().includes(kw))
+  );
+  updateSelectStyle("f-studio");
+  updateSelectStyle("f-game");
+  updateSelectStyle("f-submitter");
+  render(filtered);
+  renderSummary();
+}
+
+// 筛选联动：选工作室后清空游戏/提单人/搜索，再更新游戏下拉
+document.getElementById("f-studio").addEventListener("change", function() {
+  const studio = this.value;
+  // 清空其他筛选
+  document.getElementById("f-game").value = "";
+  document.getElementById("f-submitter").value = "";
+  document.getElementById("f-search").value = "";
+  const gameSelect = document.getElementById("f-game");
+  const games = studio
+    ? [...new Set(ALL_DATA.filter(r => r.studio === studio && r.game).map(r => r.game))]
+    : [...new Set(ALL_DATA.map(r => r.game).filter(Boolean))];
+  gameSelect.innerHTML = '<option value="">全部游戏</option>' +
+    games.map(g => `<option value="${g}">${g}</option>`).join("");
+  applyFilter();
+});
+document.getElementById("f-game").addEventListener("change", applyFilter);
+document.getElementById("f-submitter").addEventListener("change", applyFilter);
+document.getElementById("f-search").addEventListener("input", applyFilter);
+document.getElementById("f-status").addEventListener("change", applyFilter);
+
+document.getElementById("btn-reset").addEventListener("click", () => {
+  document.getElementById("f-studio").value = "";
+  document.getElementById("f-game").innerHTML = '<option value="">全部游戏</option>' +
+    [...new Set(ALL_DATA.map(r => r.game).filter(Boolean))].map(g => `<option value="${g}">${g}</option>`).join("");
+  document.getElementById("f-game").value = "";
+  document.getElementById("f-submitter").value = "";
+  document.getElementById("f-search").value = "";
+  document.getElementById("f-status").value = "";
+  // 重置侧边栏高亮
+  document.querySelectorAll(".nav-studio, .nav-game").forEach(el => el.classList.remove("active"));
+  applyFilter();
+});
+
+// 侧边栏顶部"全部工作室·本周动态"按钮
+document.getElementById("sidebar-home-btn").addEventListener("click", () => {
+  document.getElementById("f-studio").value = "";
+  document.getElementById("f-game").value = "";
+  document.getElementById("f-submitter").value = "";
+  document.getElementById("f-search").value = "";
+  document.querySelectorAll(".nav-studio, .nav-game").forEach(e => e.classList.remove("active"));
+  document.getElementById("sidebar-home-btn").classList.add("active");
+  document.getElementById("sidebar-my-btn").classList.remove("active");
+  deactivateMyWorkspace();
+  document.getElementById("filter-panel").style.display = "none";
+  document.getElementById("cards-container").innerHTML =
+    '<div class="empty" style="padding:48px 20px">' +
+    '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" style="margin:0 auto 12px;display:block;opacity:.3"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.5"/><path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.5"/></svg>' +
+    '<div>请从左侧导航栏选择工作室或游戏，查看详细任务列表</div>' +
+    '</div>';
+  document.getElementById("result-count").textContent = "";
+  renderSummary();
+});
+
+// 个人工作台状态
+let isMyWorkspaceActive = false;
+
+// 激活个人工作台（传入姓名）
+function activateMyWorkspace(name) {
+  isMyWorkspaceActive = true;
+  document.querySelectorAll(".nav-studio, .nav-game").forEach(e => e.classList.remove("active"));
+  document.getElementById("sidebar-home-btn").classList.remove("active");
+  document.getElementById("sidebar-my-btn").classList.add("active");
+  document.getElementById("f-studio").value = "";
+  document.getElementById("f-game").value = "";
+  document.getElementById("f-submitter").value = name;
+  document.getElementById("f-search").value = "";
+  // 个人工作台：隐藏新增记录和批量导入按钮
+  document.getElementById("btn-add").style.display = "none";
+  document.getElementById("btn-import").style.display = "none";
+  document.getElementById("filter-panel").style.display = "";
+  applyFilter();
+  const titleEl = document.querySelector(".summary-header-title");
+  if (titleEl) {
+    const { start, end } = getCurrentWeekRange();
+    const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
+    titleEl.textContent = `${name} · 个人工作台（${fmt(start)}~${fmt(end)}）`;
+  }
+}
+
+// 退出个人工作台（恢复按钮）
+function deactivateMyWorkspace() {
+  if (!isMyWorkspaceActive) return;
+  isMyWorkspaceActive = false;
+  document.getElementById("btn-add").style.display = "";
+  document.getElementById("btn-import").style.display = "";
+}
+
+// 侧边栏"个人工作台"按钮 — 每次点击都弹框输入，不缓存
+document.getElementById("sidebar-my-btn").addEventListener("click", () => {
+  let name = prompt("请输入您的姓名（与系统中提单人字段保持一致）：", "");
+  if (!name || !name.trim()) return;
+  activateMyWorkspace(name.trim());
+});
+
+// 侧边栏交互
+document.querySelectorAll(".nav-studio").forEach(el => {
+  el.addEventListener("click", () => {
+    const group = el.parentElement;
+    const wasOpen = group.classList.contains("open");
+    group.classList.toggle("open");
+
+    const studio = el.dataset.studio;
+    document.getElementById("f-studio").value = studio;
+    // 触发联动更新游戏列表（内部会清空其他筛选）
+    document.getElementById("f-studio").dispatchEvent(new Event("change"));
+    document.getElementById("filter-panel").style.display = "";
+    document.getElementById("sidebar-home-btn").classList.remove("active");
+    document.getElementById("sidebar-my-btn").classList.remove("active");
+    deactivateMyWorkspace();
+
+    // 高亮
+    document.querySelectorAll(".nav-studio").forEach(e => e.classList.remove("active"));
+    document.querySelectorAll(".nav-game").forEach(e => e.classList.remove("active"));
+    el.classList.add("active");
+  });
+});
+
+document.querySelectorAll(".nav-game").forEach(el => {
+  el.addEventListener("click", e => {
+    e.stopPropagation();
+    const studio = el.dataset.studio;
+    const game   = el.dataset.game;
+
+    document.getElementById("f-studio").value = studio;
+    // 更新游戏下拉
+    const games = [...new Set(ALL_DATA.filter(r => r.studio === studio && r.game).map(r => r.game))];
+    const gameSelect = document.getElementById("f-game");
+    gameSelect.innerHTML = '<option value="">全部游戏</option>' +
+      games.map(g => `<option value="${g}">${g}</option>`).join("");
+    gameSelect.value = game;
+    applyFilter();
+    document.getElementById("filter-panel").style.display = "";
+    document.getElementById("sidebar-home-btn").classList.remove("active");
+    document.getElementById("sidebar-my-btn").classList.remove("active");
+    deactivateMyWorkspace();
+
+    // 高亮
+    document.querySelectorAll(".nav-studio").forEach(e => e.classList.remove("active"));
+    document.querySelectorAll(".nav-game").forEach(e => e.classList.remove("active"));
+    el.closest(".nav-studio-group").querySelector(".nav-studio").classList.add("active");
+    el.classList.add("active");
+  });
+});
+
+// 初始化渲染：只展示本周动态，main list 显示引导提示
+renderSummary();
+document.getElementById("filter-panel").style.display = "none";
+document.getElementById("cards-container").innerHTML =
+  '<div class="empty" style="padding:48px 20px">' +
+  '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" style="margin:0 auto 12px;display:block;opacity:.3"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.5"/><path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.5"/></svg>' +
+  '<div>请从左侧导航栏选择工作室或游戏，查看详细任务列表</div>' +
+  '</div>';
+document.getElementById("result-count").textContent = "";
+
+// ── Modal 编辑 / 新增逻辑 ──
+let editingIdx = -1;
+let isNewRecord = false;
+
+function applyStatusColor(selectEl) {
+  const cls = getStatusClass(selectEl.value);
+  selectEl.className = selectEl.className.replace(/\bs-\w+/g, "").trim();
+  selectEl.classList.add(cls);
+}
+
+function openModal(idx) {
+  isNewRecord = false;
+  editingIdx = idx;
+  const item = ALL_DATA[idx];
+  document.getElementById("edit-new-fields").style.display = "none";
+  document.getElementById("edit-submitter-field").style.display = "none";
+  document.getElementById("edit-task").value    = item.task    || "";
+  document.getElementById("edit-link").value    = item.link    || "";
+  document.getElementById("edit-status").value  = item.status  || "进行中";
+  document.getElementById("edit-update").value  = item.update  || "";
+  document.getElementById("edit-updatedate").value = toDateInput(item.updateDate);
+  document.getElementById("edit-expect").value  = toDateInput(item.expect);
+  document.getElementById("edit-eta").value     = toDateInput(item.eta);
+  document.getElementById("edit-anomaly").value = item.anomaly || "";
+  document.querySelector(".modal-title").textContent = "编辑任务";
+  applyStatusColor(document.getElementById("edit-status"));
+  document.getElementById("edit-modal").classList.add("open");
+  document.getElementById("edit-task").focus();
+}
+
+function openNewModal() {
+  isNewRecord = true;
+  editingIdx = -1;
+  document.getElementById("edit-new-fields").style.display = "flex";
+  document.getElementById("edit-submitter-field").style.display = "flex";
+  // 自动带入当前筛选的工作室/游戏
+  document.getElementById("edit-studio").value = document.getElementById("f-studio").value || "";
+  document.getElementById("edit-game").value   = document.getElementById("f-game").value   || "";
+  document.getElementById("edit-submitter-input").value = "";
+  document.getElementById("edit-task").value = "";
+  document.getElementById("edit-link").value = "";
+  document.getElementById("edit-status").value = "进行中";
+  document.getElementById("edit-update").value = "";
+  document.getElementById("edit-expect").value = "";
+  document.getElementById("edit-eta").value = "";
+  document.getElementById("edit-anomaly").value = "";
+  document.querySelector(".modal-title").textContent = "新增记录";
+  applyStatusColor(document.getElementById("edit-status"));
+  document.getElementById("edit-modal").classList.add("open");
+  document.querySelector("#edit-modal .modal").classList.add("new-mode");
+  document.getElementById("edit-task").focus();
+}
+
+function closeModal() {
+  document.getElementById("edit-modal").classList.remove("open");
+  document.querySelector("#edit-modal .modal").classList.remove("new-mode");
+  editingIdx = -1;
+  isNewRecord = false;
+}
+
+function saveModal() {
+  const task = document.getElementById("edit-task").value.trim();
+  if (!task) { alert("请填写任务卡名称"); return; }
+  if (isNewRecord) {
+    const game     = document.getElementById("edit-game").value.trim();
+    const submitter= document.getElementById("edit-submitter-input").value.trim();
+    const link     = document.getElementById("edit-link").value.trim();
+    if (!game)      { alert("请填写游戏 / 项目");  return; }
+    if (!submitter) { alert("请填写提单人");        return; }
+    if (!task)      { alert("请填写任务卡名称");    return; }
+    if (!link)      { alert("请填写链接");          return; }
+    ALL_DATA.push({
+      studio:    document.getElementById("edit-studio").value.trim(),
+      game,
+      task,
+      link,
+      submitter,
+      avatar:    "",
+      status:    document.getElementById("edit-status").value,
+      update:    document.getElementById("edit-update").value.trim(),
+      updateDate: fromDateInput(document.getElementById("edit-updatedate").value),
+      expect:    fromDateInput(document.getElementById("edit-expect").value),
+      eta:       fromDateInput(document.getElementById("edit-eta").value),
+      anomaly:   document.getElementById("edit-anomaly").value.trim() || "无",
+    });
+  } else {
+    if (editingIdx < 0) return;
+    const item = ALL_DATA[editingIdx];
+    item.task    = task;
+    item.link    = document.getElementById("edit-link").value.trim();
+    item.status  = document.getElementById("edit-status").value;
+    item.update  = document.getElementById("edit-update").value.trim();
+    item.updateDate = fromDateInput(document.getElementById("edit-updatedate").value);
+    item.expect  = fromDateInput(document.getElementById("edit-expect").value);
+    item.eta     = fromDateInput(document.getElementById("edit-eta").value);
+    item.anomaly = document.getElementById("edit-anomaly").value.trim();
+  }
+  closeModal();
+  applyFilter();
+}
+
+document.getElementById("modal-close-btn").addEventListener("click", closeModal);
+document.getElementById("modal-cancel-btn").addEventListener("click", closeModal);
+
+// 点击其他区域关闭异常详情弹窗
+document.addEventListener("click", e => {
+  const popup = document.getElementById("anomaly-popup");
+  if (popup.classList.contains("open") && !popup.contains(e.target) && !e.target.closest(".btn-anomaly-detail")) {
+    popup.classList.remove("open");
+  }
+});
+document.getElementById("modal-save-btn").addEventListener("click", saveModal);
+document.getElementById("edit-modal").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.getElementById("edit-status").addEventListener("change", function() {
+  applyStatusColor(this);
+});
+
+// 新增记录按钮
+document.getElementById("btn-add").addEventListener("click", openNewModal);
+
+// 委托：点击编辑按钮
+document.getElementById("cards-container").addEventListener("click", e => {
+  const btn = e.target.closest(".btn-edit");
+  if (!btn) return;
+  openModal(Number(btn.dataset.idx));
+});
+
+// 委托：异常详情弹出
+document.getElementById("cards-container").addEventListener("click", e => {
+  const btn = e.target.closest(".btn-anomaly-detail");
+  if (!btn) return;
+  e.stopPropagation();
+  const popup = document.getElementById("anomaly-popup");
+  const text = btn.dataset.anomaly;
+  popup.textContent = text;
+  const rect = btn.getBoundingClientRect();
+  popup.style.left = Math.min(rect.left, window.innerWidth - 340) + "px";
+  popup.style.top  = (rect.bottom + 6) + "px";
+  popup.classList.add("open");
+});
+
+// 委托：行内状态修改 & 进度更新时间修改
+document.getElementById("cards-container").addEventListener("change", e => {
+  const sel = e.target.closest(".status-select");
+  if (sel) {
+    const idx = Number(sel.dataset.idx);
+    ALL_DATA[idx].status = sel.value;
+    applyStatusColor(sel);
+    renderSummary();
+    return;
+  }
+  const dateInput = e.target.closest(".inline-date");
+  if (dateInput) {
+    const idx = Number(dateInput.dataset.idx);
+    const field = dateInput.dataset.field || "updateDate";
+    ALL_DATA[idx][field] = fromDateInput(dateInput.value);
+    return;
+  }
+});
+
+// ── 单条删除 ──
+document.getElementById("cards-container").addEventListener("click", e => {
+  const btn = e.target.closest(".btn-delete");
+  if (!btn) return;
+  const idx = Number(btn.dataset.idx);
+  const task = ALL_DATA[idx]?.task || "该任务";
+  if (!confirm(`确认删除「${task.slice(0,30)}…」？此操作不可撤销。`)) return;
+  ALL_DATA.splice(idx, 1);
+  clearBulkSelect();
+  applyFilter();
+});
+
+// ── 复选框 & 批量删除 ──
+function getSelectedIdxs() {
+  return [...document.querySelectorAll(".row-checkbox:not(.header-check):checked")]
+    .map(cb => Number(cb.dataset.idx));
+}
+
+function updateBulkBar() {
+  const idxs = getSelectedIdxs();
+  const bar = document.getElementById("bulk-bar");
+  if (idxs.length > 0) {
+    bar.classList.add("visible");
+    document.getElementById("bulk-count").textContent = idxs.length;
+  } else {
+    bar.classList.remove("visible");
+  }
+}
+
+function clearBulkSelect() {
+  document.querySelectorAll(".row-checkbox").forEach(cb => cb.checked = false);
+  document.getElementById("bulk-bar").classList.remove("visible");
+}
+
+// 委托：复选框变化
+document.getElementById("cards-container").addEventListener("change", e => {
+  const cb = e.target.closest(".row-checkbox");
+  if (!cb || cb.classList.contains("header-check")) return;
+  updateBulkBar();
+});
+
+// 表头全选（事件委托到 cards-container）
+document.getElementById("cards-container").addEventListener("change", e => {
+  const hc = e.target.closest(".header-check");
+  if (!hc) return;
+  const checked = hc.checked;
+  document.querySelectorAll(".row-checkbox:not(.header-check)").forEach(cb => cb.checked = checked);
+  updateBulkBar();
+});
+
+document.getElementById("btn-bulk-delete").addEventListener("click", () => {
+  const idxs = getSelectedIdxs();
+  if (!idxs.length) return;
+  if (!confirm(`确认删除选中的 ${idxs.length} 条任务？此操作不可撤销。`)) return;
+  // 从大到小删除，避免索引错位
+  idxs.sort((a, b) => b - a).forEach(i => ALL_DATA.splice(i, 1));
+  clearBulkSelect();
+  applyFilter();
+});
+
+document.getElementById("btn-bulk-cancel").addEventListener("click", clearBulkSelect);
+
+// Esc 关闭 / Ctrl+Enter 保存
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    closeModal();
+    closeImportModal();
+  }
+  if (e.key === "Enter" && e.ctrlKey && (editingIdx >= 0 || isNewRecord)) saveModal();
+});
+
+// ── 本周动态折叠 ──
+document.getElementById("summary-toggle").addEventListener("click", () => {
+  document.getElementById("week-summary").classList.toggle("collapsed");
+  const tog = document.querySelector(".summary-toggle");
+  tog.firstChild.textContent = document.getElementById("week-summary").classList.contains("collapsed") ? "展开" : "收起";
+});
+
+// ── 批量导入逻辑 ──
+let importParsed = null;
+
+function closeImportModal() {
+  document.getElementById("import-modal").classList.remove("open");
+  document.getElementById("import-json").value = "";
+  document.getElementById("import-preview").textContent = "";
+  importParsed = null;
+}
+
+document.getElementById("btn-import").addEventListener("click", () => {
+  document.getElementById("import-modal").classList.add("open");
+});
+document.getElementById("import-close-btn").addEventListener("click", closeImportModal);
+document.getElementById("import-cancel-btn").addEventListener("click", closeImportModal);
+document.getElementById("import-modal").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeImportModal();
+});
+
+document.getElementById("import-parse-btn").addEventListener("click", () => {
+  const raw = document.getElementById("import-json").value.trim();
+  const preview = document.getElementById("import-preview");
+  try {
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) throw new Error("必须是 JSON 数组");
+    importParsed = arr;
+    preview.style.color = "#059669";
+    preview.textContent = `✓ 解析成功，共 ${arr.length} 条记录，确认后将追加导入。`;
+  } catch(err) {
+    importParsed = null;
+    preview.style.color = "#dc2626";
+    preview.textContent = `✗ 解析失败：${err.message}`;
+  }
+});
+
+document.getElementById("import-confirm-btn").addEventListener("click", () => {
+  if (!importParsed) {
+    document.getElementById("import-preview").style.color = "#dc2626";
+    document.getElementById("import-preview").textContent = "请先点击「解析预览」";
+    return;
+  }
+  importParsed.forEach(r => {
+    ALL_DATA.push({
+      studio: r.studio||"", game: r.game||"", task: r.task||"",
+      link: r.link||"", submitter: r.submitter||"未知", avatar: r.avatar||"",
+      status: r.status||"进行中", update: r.update||"",
+      expect: r.expect||"", eta: r.eta||"", anomaly: r.anomaly||"无",
+    });
+  });
+  closeImportModal();
+  applyFilter();
+});
+</script>
+</body>
+</html>
