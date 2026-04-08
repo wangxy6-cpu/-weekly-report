@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>技术中台 · 周进度报告</title>
+<title>平台排期汇总 需求进度查询平台</title>
 <style>
   :root {
     --bg: #f0f2f7; --card: #ffffff; --border: #e4e7ed;
@@ -29,16 +29,149 @@
   .header-title { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
   .header-meta { color: rgba(255,255,255,.55); font-size: 11px; }
 
-  /* ── Role Switcher ── */
-  .role-switcher { margin-left: auto; display: flex; align-items: center; gap: 4px; margin-right: 14px; }
-  .role-btn {
-    font-size: 11px; padding: 3px 11px; border-radius: 20px;
-    border: 1px solid rgba(255,255,255,.22); color: rgba(255,255,255,.6);
-    background: rgba(255,255,255,.07); cursor: pointer;
-    transition: all .15s; white-space: nowrap; font-family: inherit;
+  /* ── Header User Dropdown ── */
+  .header-user { margin-left: auto; position: relative; }
+  .header-user-trigger {
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    transition: background .15s; user-select: none;
   }
-  .role-btn:hover { background: rgba(255,255,255,.14); color: #fff; }
-  .role-btn.active { background: rgba(255,255,255,.2); color: #fff; border-color: rgba(255,255,255,.5); font-weight: 600; }
+  .header-user-trigger:hover { background: rgba(255,255,255,.1); }
+  .header-username { color: rgba(255,255,255,.9); font-size: 12px; font-weight: 500; }
+  .header-role-tag {
+    font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+    background: rgba(255,255,255,.12); color: rgba(255,255,255,.75);
+  }
+  .header-role-tag.role-admin  { background: rgba(251,191,36,.25); color: #fcd34d; }
+  .header-role-tag.role-member { background: rgba(52,211,153,.2);  color: #6ee7b7; }
+  .header-role-tag.role-viewer { background: rgba(156,163,175,.15); color: #9ca3af; }
+  .header-chevron { color: rgba(255,255,255,.5); transition: transform .2s; flex-shrink: 0; }
+  .header-user.open .header-chevron { transform: rotate(180deg); }
+  .user-dropdown {
+    display: none; position: absolute; top: calc(100% + 6px); right: 0;
+    background: #fff; border-radius: 10px; min-width: 160px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.15); border: 1px solid var(--border);
+    overflow: hidden; z-index: 200;
+  }
+  .header-user.open .user-dropdown { display: block; }
+  .dropdown-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 10px 16px; font-size: 13px; color: var(--text-primary);
+    cursor: pointer; transition: background .12s; white-space: nowrap;
+  }
+  .dropdown-item svg { color: var(--text-secondary); flex-shrink: 0; }
+  .dropdown-item:hover { background: var(--primary-light); color: var(--primary); }
+  .dropdown-item:hover svg { color: var(--primary); }
+  .dropdown-item.danger { color: #dc2626; }
+  .dropdown-item.danger svg { color: #dc2626; }
+  .dropdown-item.danger:hover { background: #fef2f2; color: #dc2626; }
+  .dropdown-divider { border-top: 1px solid var(--border); margin: 4px 0; }
+
+  /* ── Login Overlay ── */
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: linear-gradient(135deg, #1a2d6d 0%, #2B5CE6 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .login-card {
+    background: #fff; border-radius: 16px; padding: 40px 36px 36px;
+    width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,.3);
+  }
+  .login-head { text-align: center; margin-bottom: 28px; }
+  .login-head-title { font-size: 19px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .login-head-sub { font-size: 12px; color: var(--text-secondary); }
+  .login-field { margin-bottom: 14px; }
+  .login-field label { display: block; font-size: 11px; font-weight: 600;
+    color: var(--text-secondary); margin-bottom: 5px; letter-spacing: .3px; }
+  .login-input {
+    width: 100%; padding: 9px 12px; border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 13px; color: var(--text-primary);
+    font-family: inherit; transition: border-color .15s, box-shadow .15s;
+  }
+  .login-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(43,92,230,.1); }
+  .login-error { font-size: 12px; color: #dc2626; min-height: 18px; margin-bottom: 10px; }
+  .btn-login {
+    width: 100%; padding: 10px; background: var(--primary); color: #fff;
+    border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background .15s; font-family: inherit;
+  }
+  .btn-login:hover { background: #1a4bc4; }
+  .login-remember { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; font-size: 12px; color: var(--text-secondary); cursor: pointer; }
+  .login-remember input { cursor: pointer; }
+  .login-hint { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 14px; }
+
+  /* ── Settings Modal ── */
+  .settings-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center;
+  }
+  .settings-modal {
+    background: #fff; width: 720px; max-width: 96vw;
+    border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
+    max-height: 88vh; box-shadow: 0 20px 60px rgba(0,0,0,.22);
+  }
+  .settings-modal-hd {
+    padding: 18px 22px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .settings-modal-title { font-size: 15px; font-weight: 700; color: var(--text-primary); flex: 1; }
+  .settings-tabs { display: flex; gap: 0; padding: 0 22px;
+    border-bottom: 1px solid var(--border); background: var(--bg); }
+  .settings-tab {
+    padding: 10px 16px; font-size: 12px; font-weight: 600; cursor: pointer;
+    color: var(--text-secondary); border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: color .15s; user-select: none;
+  }
+  .settings-tab:hover { color: var(--text-primary); }
+  .settings-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .settings-toolbar {
+    padding: 12px 22px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .settings-search {
+    flex: 1; max-width: 280px; padding: 7px 12px;
+    border: 1.5px solid var(--border); border-radius: 7px;
+    font-size: 13px; color: var(--text-primary); font-family: inherit;
+  }
+  .settings-search:focus { outline: none; border-color: var(--primary); }
+  .settings-body { flex: 1; overflow-y: auto; }
+  .settings-table { width: 100%; border-collapse: collapse; }
+  .settings-table th {
+    padding: 9px 16px; font-size: 11px; font-weight: 600; color: var(--text-secondary);
+    text-align: left; background: var(--bg); border-bottom: 1px solid var(--border);
+    letter-spacing: .5px; position: sticky; top: 0; z-index: 1;
+  }
+  .settings-table td { padding: 10px 16px; border-bottom: 1px solid var(--border);
+    font-size: 13px; vertical-align: middle; }
+  .settings-table tbody tr:hover td { background: #fafbff; }
+  .user-cell { display: flex; align-items: center; gap: 9px; }
+  .user-avatar-sm {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+  }
+  .user-name-sm { font-weight: 500; color: var(--text-primary); line-height: 1.3; }
+  .user-sub { font-size: 11px; color: var(--text-muted); }
+  .role-select {
+    padding: 4px 26px 4px 9px; border: 1.5px solid var(--border); border-radius: 6px;
+    font-size: 12px; font-weight: 500; font-family: inherit; cursor: pointer;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239ca3af'/%3E%3C/svg%3E") no-repeat right 8px center;
+    appearance: none; transition: border-color .15s; color: var(--text-primary);
+  }
+  .role-select:focus { outline: none; border-color: var(--primary); }
+  .role-select.r-admin  { border-color: #f59e0b; color: #92400e; background-color: #fef3c7; }
+  .role-select.r-member { border-color: #10b981; color: #065f46; background-color: #d1fae5; }
+  .role-select.r-viewer { border-color: var(--border); color: var(--text-secondary); }
+  .btn-reset-pwd {
+    padding: 4px 11px; border: 1.5px solid var(--border); border-radius: 6px;
+    background: #fff; font-size: 11px; cursor: pointer; color: var(--text-secondary);
+    transition: all .15s; font-family: inherit;
+  }
+  .btn-reset-pwd:hover { border-color: #f59e0b; color: #92400e; background: #fef3c7; }
+  .tag-me { font-size: 10px; padding: 1px 6px; border-radius: 8px;
+    background: rgba(43,92,230,.1); color: var(--primary); font-weight: 600; margin-left: 4px; }
+  .settings-footer { padding: 10px 22px; border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-muted); background: var(--bg); }
 
   /* ── Role-based visibility ── */
   body[data-role="member"] #btn-add,
@@ -180,6 +313,44 @@
   }
   .filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(43,92,230,.1); }
   .filter-select.has-value { border-color: var(--primary); background-color: var(--primary-light); color: var(--primary); font-weight: 500; }
+
+  /* ── Searchable Select ── */
+  .ss-wrap { position: relative; min-width: 130px; max-width: 190px; }
+  .ss-trigger {
+    border: 1.5px solid var(--border); border-radius: 7px;
+    padding: 6px 28px 6px 10px; font-size: 13px;
+    background: #f8f9ff; color: var(--text-primary);
+    width: 100%; cursor: pointer; user-select: none; position: relative;
+    transition: border-color .15s, box-shadow .15s; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; display: block;
+    font-family: inherit;
+  }
+  .ss-trigger:hover { border-color: #c0c7d8; }
+  .ss-trigger.has-value { border-color: var(--primary); background-color: var(--primary-light); color: var(--primary); font-weight: 500; }
+  .ss-arrow { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; transition: transform .2s; }
+  .ss-wrap.open .ss-arrow { transform: translateY(-50%) rotate(180deg); }
+  .ss-dropdown {
+    display: none; position: absolute; top: calc(100% + 4px); left: 0; z-index: 350;
+    background: #fff; border: 1.5px solid var(--border); border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.13); min-width: 180px; max-width: 280px; overflow: hidden;
+  }
+  .ss-wrap.open .ss-dropdown { display: block; }
+  .ss-search {
+    width: 100%; padding: 8px 12px; border: none; border-bottom: 1px solid var(--border);
+    font-size: 12px; color: var(--text-primary); font-family: inherit; outline: none;
+    background: var(--bg);
+  }
+  .ss-list { max-height: 210px; overflow-y: auto; padding: 4px 0; }
+  .ss-list::-webkit-scrollbar { width: 4px; }
+  .ss-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,.12); border-radius: 2px; }
+  .ss-option {
+    padding: 7px 12px; font-size: 13px; color: var(--text-primary);
+    cursor: pointer; transition: background .1s; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .ss-option:hover { background: var(--primary-light); color: var(--primary); }
+  .ss-option.ss-selected { color: var(--primary); font-weight: 600; background: #f0f4ff; }
+  .ss-empty { padding: 10px 12px; font-size: 12px; color: var(--text-muted); text-align: center; }
   /* 搜索框 */
   .search-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 200px; max-width: 340px; }
   .search-wrap { position: relative; }
@@ -438,6 +609,27 @@
   .summary-body { padding: 0; }
   .week-summary.collapsed .summary-body { display: none; }
   .summary-group { border-bottom: 1px solid var(--border); }
+
+  /* ── 已上线汇总区 ── */
+  .online-section {
+    background: var(--card); border: 1px solid #a7f3d0;
+    border-radius: 12px; margin-bottom: 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06); overflow: hidden;
+  }
+  .online-section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 16px; border-bottom: 1px solid #a7f3d0;
+    background: linear-gradient(90deg, #ecfdf5, #f0fdf9);
+    cursor: pointer; user-select: none;
+  }
+  .online-section-header-left { display: flex; align-items: center; gap: 8px; }
+  .online-section-title { font-size: 13px; font-weight: 700; color: #065f46; }
+  .online-section-count { font-size: 11px; color: #059669; background: #d1fae5; padding: 1px 8px; border-radius: 20px; font-weight: 500; }
+  .online-section-toggle { font-size: 11px; color: #6b7280; display: flex; align-items: center; gap: 4px; }
+  .online-section-toggle svg { transition: transform .2s; }
+  .online-section.collapsed .online-section-toggle svg { transform: rotate(-90deg); }
+  .online-section-body { padding: 0; }
+  .online-section.collapsed .online-section-body { display: none; }
   .summary-group:last-child { border-bottom: none; }
   .summary-group-hd {
     display: flex; align-items: center; gap: 8px;
@@ -503,13 +695,31 @@
 <body>
 
 <header class="page-header">
-  <span class="header-title">技术中台 · 周进度报告</span>
-  <div class="role-switcher">
-    <button class="role-btn active" data-role="admin" onclick="switchRole('admin')">管理员</button>
-    <button class="role-btn" data-role="member" onclick="switchRole('member')">项目组成员</button>
-    <button class="role-btn" data-role="viewer" onclick="switchRole('viewer')">普通成员</button>
+  <span class="header-title">平台排期汇总 需求进度查询平台</span>
+  <div class="header-user" id="header-user">
+    <div class="header-user-trigger" id="header-user-trigger">
+      <span class="header-username" id="header-username"></span>
+      <span class="header-role-tag" id="header-role-tag"></span>
+      <svg class="header-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="user-dropdown" id="user-dropdown">
+      <div class="dropdown-item" onclick="openChangePwd()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        修改密码
+      </div>
+      <div class="dropdown-item" id="dropdown-settings" style="display:none" onclick="openSettings()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8"/></svg>
+        系统设置
+      </div>
+      <div class="dropdown-divider"></div>
+      <div class="dropdown-item danger" onclick="logout()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        退出登录
+      </div>
+    </div>
   </div>
-  <span class="header-meta">生成于 2026/4/3 18:42:12</span>
 </header>
 
 <div class="layout">
@@ -788,6 +998,22 @@
       </div>
     </div>
 
+    <!-- 已上线汇总区 -->
+    <div class="online-section" id="online-section" style="display:none">
+      <div class="online-section-header" id="online-section-toggle">
+        <div class="online-section-header-left">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="color:#059669"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="online-section-title">已上线</span>
+          <span class="online-section-count" id="online-section-count">0 条</span>
+        </div>
+        <span class="online-section-toggle">
+          收起
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3l3 4 3-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+      <div class="online-section-body" id="online-section-body"></div>
+    </div>
+
     <!-- 卡片区 -->
     <div id="cards-container"></div>
   </main>
@@ -895,6 +1121,98 @@
       <button class="btn-cancel" id="import-cancel-btn">取消</button>
       <button class="btn-secondary-sm" id="import-parse-btn" style="margin-right:4px">解析预览</button>
       <button class="btn-save" id="import-confirm-btn">确认导入</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── 登录界面 ─── -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-card">
+    <div class="login-head">
+      <div class="login-head-title">技术中台 · 周进度报告</div>
+      <div class="login-head-sub">请使用您的账号登录</div>
+    </div>
+    <div class="login-field">
+      <label>账号</label>
+      <input type="text" class="login-input" id="login-username" placeholder="用户名中文拼音（例：王星宇）" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>密码</label>
+      <input type="password" class="login-input" id="login-password" placeholder="请输入密码" autocomplete="current-password">
+    </div>
+    <label class="login-remember">
+      <input type="checkbox" id="login-remember"> 记住账号密码
+    </label>
+    <div class="login-error" id="login-error"></div>
+    <button class="btn-login" onclick="doLogin()">登 录</button>
+    <div class="login-hint">初始密码：123456</div>
+  </div>
+</div>
+
+<!-- ─── 系统设置弹窗 ─── -->
+<div class="settings-overlay" id="settings-overlay" style="display:none">
+  <div class="settings-modal">
+    <div class="settings-modal-hd">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style="color:var(--primary);flex-shrink:0">
+        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8"/>
+      </svg>
+      <span class="settings-modal-title">系统设置</span>
+      <button class="modal-close" onclick="closeSettings()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="settings-tabs">
+      <div class="settings-tab active">用户与角色</div>
+    </div>
+    <div class="settings-toolbar">
+      <input type="text" class="settings-search" id="settings-search" placeholder="搜索用户名…">
+      <button class="btn-primary-sm" onclick="openAddUserPrompt()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        添加用户
+      </button>
+    </div>
+    <div class="settings-body">
+      <table class="settings-table">
+        <thead><tr>
+          <th style="width:40%">用户</th>
+          <th style="width:28%">角色权限</th>
+          <th>操作</th>
+        </tr></thead>
+        <tbody id="settings-tbody"></tbody>
+      </table>
+    </div>
+    <div class="settings-footer">共 <span id="settings-user-count">0</span> 个用户 &nbsp;·&nbsp; 默认密码 123456 &nbsp;·&nbsp; 管理员初始密码 admin123</div>
+  </div>
+</div>
+
+<!-- ─── 修改密码弹窗 ─── -->
+<div class="settings-overlay" id="change-pwd-overlay" style="display:none">
+  <div class="settings-modal" style="width:380px;max-width:96vw">
+    <div class="settings-modal-hd">
+      <span class="settings-modal-title">修改密码</span>
+      <button class="modal-close" onclick="closeChangePwd()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div style="padding:20px 22px">
+      <div class="login-field">
+        <label style="font-size:11px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:5px">当前密码</label>
+        <input type="password" class="login-input" id="pwd-old" placeholder="请输入当前密码">
+      </div>
+      <div class="login-field">
+        <label style="font-size:11px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:5px">新密码</label>
+        <input type="password" class="login-input" id="pwd-new" placeholder="请输入新密码（至少4位）">
+      </div>
+      <div class="login-field">
+        <label style="font-size:11px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:5px">确认新密码</label>
+        <input type="password" class="login-input" id="pwd-confirm" placeholder="再次输入新密码">
+      </div>
+      <div class="login-error" id="pwd-error" style="margin-bottom:10px"></div>
+    </div>
+    <div class="modal-footer" style="padding:10px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn-cancel" onclick="closeChangePwd()">取消</button>
+      <button class="btn-save" onclick="doChangePwd()">确认修改</button>
     </div>
   </div>
 </div>
@@ -3222,6 +3540,65 @@ function isCurrentWeek(dateStr) {
   return d >= start && d <= end;
 }
 
+// 已上线且超过本周（应移出主任务区，仅在已上线汇总区显示）
+function isOnlineOutdated(r) {
+  if (r.status !== "已上线") return false;
+  if (!r.updateDate) return false;
+  return !isCurrentWeek(r.updateDate);
+}
+
+// 渲染已上线汇总区（不受筛选条件影响，显示所有超期已上线记录）
+function renderOnlineSection() {
+  let outdated = ALL_DATA.filter(r => isOnlineOutdated(r));
+  // 个人工作台模式：只展示当前登录用户的数据
+  if (isMyWorkspaceActive) {
+    const cur = getCurrentUser();
+    const myName = cur ? (cur.display || cur.name) : '';
+    outdated = outdated.filter(r => r.submitter === myName);
+  }
+  const sec = document.getElementById("online-section");
+  if (!outdated.length) { sec.style.display = "none"; return; }
+  sec.style.display = "";
+  document.getElementById("online-section-count").textContent = outdated.length + " 条";
+
+  // 按提单人分组，复用主区域的渲染逻辑（只取表格 HTML）
+  const grouped = {};
+  outdated.forEach(r => {
+    (grouped[r.submitter] = grouped[r.submitter] || []).push(r);
+  });
+  document.getElementById("online-section-body").innerHTML =
+    Object.entries(grouped).map(([name, rows]) => {
+      const rowsHtml = rows.map(r => `
+        <tr>
+          <td style="padding:8px 16px;font-size:12px;color:var(--text-secondary)">${r.studio || "—"}</td>
+          <td style="padding:8px 16px;font-size:12px">${r.game || "—"}</td>
+          <td style="padding:8px 16px;font-size:13px">
+            ${r.link ? `<a href="${r.link}" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none">${r.task}</a>` : r.task}
+          </td>
+          <td style="padding:8px 16px"><span class="badge status-online">已上线</span></td>
+          <td style="padding:8px 16px;font-size:12px;color:var(--text-muted)">${r.updateDate || "—"}</td>
+        </tr>`).join("");
+      return `
+        <div style="border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;background:#f8fffe">
+            <div class="avatar-fallback" style="background:#059669;width:24px;height:24px;font-size:11px">${name[0]}</div>
+            <span style="font-size:13px;font-weight:600">${name}</span>
+            <span style="font-size:11px;color:#059669;background:#d1fae5;padding:1px 8px;border-radius:20px">${rows.length} 条</span>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
+            <thead><tr style="background:var(--bg)">
+              <th style="padding:6px 16px;font-size:11px;font-weight:600;color:var(--text-secondary);text-align:left;width:13%">工作室</th>
+              <th style="padding:6px 16px;font-size:11px;font-weight:600;color:var(--text-secondary);text-align:left;width:15%">游戏/项目</th>
+              <th style="padding:6px 16px;font-size:11px;font-weight:600;color:var(--text-secondary);text-align:left">任务卡</th>
+              <th style="padding:6px 16px;font-size:11px;font-weight:600;color:var(--text-secondary);text-align:left;width:8%">状态</th>
+              <th style="padding:6px 16px;font-size:11px;font-weight:600;color:var(--text-secondary);text-align:left;width:10%">上线日期</th>
+            </tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>`;
+    }).join("");
+}
+
 function badge(status) {
   const [cls, label] = STATUS_MAP[status] || ["status-other", status || "—"];
   return `<span class="badge ${cls}">${label}</span>`;
@@ -3438,12 +3815,14 @@ function updateSelectStyle(id) {
   const el = document.getElementById(id);
   if (el.value) el.classList.add("has-value");
   else el.classList.remove("has-value");
+  if (ssInstances[id]) ssInstances[id].refresh();
 }
 
 function applyFilter() {
   const { studio, game, submitter, search, status } = getFilters();
   const kw = search.toLowerCase();
   const filtered = ALL_DATA.filter(r =>
+    !isOnlineOutdated(r) &&                                              // 超期已上线不在主区显示
     (!studio    || r.studio    === studio)    &&
     (!game      || r.game      === game)      &&
     (!submitter || r.submitter === submitter) &&
@@ -3453,7 +3832,9 @@ function applyFilter() {
   updateSelectStyle("f-studio");
   updateSelectStyle("f-game");
   updateSelectStyle("f-submitter");
+  updateSelectStyle("f-status");
   render(filtered);
+  renderOnlineSection();
   renderSummary();
 }
 
@@ -3496,11 +3877,13 @@ document.getElementById("sidebar-home-btn").addEventListener("click", () => {
   document.getElementById("f-game").value = "";
   document.getElementById("f-submitter").value = "";
   document.getElementById("f-search").value = "";
+  refreshSearchSelects();
   document.querySelectorAll(".nav-studio, .nav-game").forEach(e => e.classList.remove("active"));
   document.getElementById("sidebar-home-btn").classList.add("active");
   document.getElementById("sidebar-my-btn").classList.remove("active");
   deactivateMyWorkspace();
   document.getElementById("filter-panel").style.display = "none";
+  document.getElementById("online-section").style.display = "none";
   document.getElementById("cards-container").innerHTML =
     '<div class="empty" style="padding:48px 20px">' +
     '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" style="margin:0 auto 12px;display:block;opacity:.3"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.5"/><path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.5"/></svg>' +
@@ -3512,17 +3895,44 @@ document.getElementById("sidebar-home-btn").addEventListener("click", () => {
 
 // 个人工作台状态
 let isMyWorkspaceActive = false;
+// 个人工作台独立筛选状态
+let myWorkspaceFilter = { studio: '', game: '', submitter: '', search: '', status: '' };
+// 工作室视图筛选状态（切换回工作室时恢复）
+let studioFilter = { studio: '', game: '', submitter: '', search: '', status: '' };
+
+function saveCurrentFilterTo(target) {
+  target.studio    = document.getElementById("f-studio").value;
+  target.game      = document.getElementById("f-game").value;
+  target.submitter = document.getElementById("f-submitter").value;
+  target.search    = document.getElementById("f-search").value;
+  target.status    = document.getElementById("f-status").value;
+}
+
+function restoreFilterFrom(source) {
+  document.getElementById("f-studio").value    = source.studio    || "";
+  document.getElementById("f-game").value      = source.game      || "";
+  document.getElementById("f-submitter").value = source.submitter || "";
+  document.getElementById("f-search").value    = source.search    || "";
+  document.getElementById("f-status").value    = source.status    || "";
+}
 
 // 激活个人工作台（传入姓名）
 function activateMyWorkspace(name) {
+  if (!isMyWorkspaceActive) {
+    // 保存当前工作室筛选状态
+    saveCurrentFilterTo(studioFilter);
+  }
   isMyWorkspaceActive = true;
   document.querySelectorAll(".nav-studio, .nav-game").forEach(e => e.classList.remove("active"));
   document.getElementById("sidebar-home-btn").classList.remove("active");
   document.getElementById("sidebar-my-btn").classList.add("active");
-  document.getElementById("f-studio").value = "";
-  document.getElementById("f-game").value = "";
+  // 个人工作台始终重置为默认筛选
+  document.getElementById("f-studio").value    = "";
+  document.getElementById("f-game").value      = "";
   document.getElementById("f-submitter").value = name;
-  document.getElementById("f-search").value = "";
+  document.getElementById("f-search").value    = "";
+  document.getElementById("f-status").value    = "";
+  refreshSearchSelects();
   // 个人工作台：隐藏新增记录和批量导入按钮
   document.getElementById("btn-add").style.display = "none";
   document.getElementById("btn-import").style.display = "none";
@@ -3536,19 +3946,26 @@ function activateMyWorkspace(name) {
   }
 }
 
-// 退出个人工作台（恢复按钮）
+// 退出个人工作台（恢复按钮 + 恢复工作室筛选）
 function deactivateMyWorkspace() {
   if (!isMyWorkspaceActive) return;
+  // 保存个人工作台当前筛选状态
+  saveCurrentFilterTo(myWorkspaceFilter);
   isMyWorkspaceActive = false;
   document.getElementById("btn-add").style.display = "";
   document.getElementById("btn-import").style.display = "";
+  // 恢复工作室筛选状态，提单人始终清空
+  restoreFilterFrom(studioFilter);
+  document.getElementById("f-submitter").value = "";
+  studioFilter.submitter = "";
+  refreshSearchSelects();
 }
 
-// 侧边栏"个人工作台"按钮 — 每次点击都弹框输入，不缓存
+// 侧边栏"个人工作台"按钮 — 使用当前登录用户
 document.getElementById("sidebar-my-btn").addEventListener("click", () => {
-  let name = prompt("请输入您的姓名（与系统中提单人字段保持一致）：", "");
-  if (!name || !name.trim()) return;
-  activateMyWorkspace(name.trim());
+  const cur = getCurrentUser();
+  if (!cur) { alert("请先登录"); return; }
+  activateMyWorkspace(cur.name);
 });
 
 // 侧边栏交互
@@ -3851,6 +4268,13 @@ document.getElementById("summary-toggle").addEventListener("click", () => {
   tog.firstChild.textContent = document.getElementById("week-summary").classList.contains("collapsed") ? "展开" : "收起";
 });
 
+// ── 已上线区折叠 ──
+document.getElementById("online-section-toggle").addEventListener("click", () => {
+  document.getElementById("online-section").classList.toggle("collapsed");
+  const tog = document.querySelector(".online-section-toggle");
+  tog.firstChild.textContent = document.getElementById("online-section").classList.contains("collapsed") ? "展开" : "收起";
+});
+
 // ── 批量导入逻辑 ──
 let importParsed = null;
 
@@ -3904,15 +4328,387 @@ document.getElementById("import-confirm-btn").addEventListener("click", () => {
   applyFilter();
 });
 
-// ── 角色权限管理 ──
-function switchRole(role) {
-  document.body.dataset.role = role;
-  document.querySelectorAll(".role-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.role === role);
-  });
+// ── 用户管理与登录系统 ──
+const USERS_KEY    = 'wr_users';
+const SESSION_KEY  = 'wr_session';
+const REMEMBER_KEY = 'wr_remember';
+const ROLE_LABELS = { admin: '管理员', member: '项目组成员', viewer: '普通成员' };
+const AVATAR_COLORS = ['#6366f1','#2B5CE6','#8b5cf6','#ec4899','#f59e0b','#10b981','#ef4444','#06b6d4'];
+
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; } catch(e) { return []; }
 }
-// 初始化角色为管理员
-document.body.dataset.role = "admin";
+function saveUsers(u) { localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+
+function initUsersIfEmpty() {
+  if (getUsers().length > 0) return;
+  const submitters = [...new Set(ALL_DATA.map(r => r.submitter).filter(Boolean))];
+  saveUsers([
+    { name: 'admin', display: '系统管理员', password: 'admin123', role: 'admin' },
+    ...submitters.map(n => ({ name: n, display: n, password: '123456', role: 'member' }))
+  ]);
+}
+
+// 迁移：将所有非管理员用户角色统一改为 member
+function migrateRolesToMember() {
+  const users = getUsers();
+  if (!users.length) return;
+  let changed = false;
+  users.forEach(u => {
+    if (u.role !== 'admin' && u.role !== 'member') {
+      u.role = 'member';
+      changed = true;
+    }
+  });
+  if (changed) saveUsers(users);
+}
+
+function getCurrentUser() {
+  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch(e) { return null; }
+}
+function setCurrentUser(u) { sessionStorage.setItem(SESSION_KEY, JSON.stringify(u)); }
+function clearCurrentUser() { sessionStorage.removeItem(SESSION_KEY); }
+
+function doLogin() {
+  const name = document.getElementById('login-username').value.trim();
+  const pwd  = document.getElementById('login-password').value;
+  const err  = document.getElementById('login-error');
+  if (!name || !pwd) { err.textContent = '请填写账号和密码'; return; }
+  const user = getUsers().find(u => u.name === name && u.password === pwd);
+  if (!user) { err.textContent = '账号或密码错误，请重试'; return; }
+  err.textContent = '';
+  // 记住账号密码
+  if (document.getElementById('login-remember').checked) {
+    localStorage.setItem(REMEMBER_KEY, JSON.stringify({ name, pwd }));
+  } else {
+    localStorage.removeItem(REMEMBER_KEY);
+  }
+  setCurrentUser({ name: user.name, display: user.display || user.name, role: user.role });
+  document.getElementById('login-overlay').style.display = 'none';
+  applyCurrentUser();
+}
+
+function logout() {
+  clearCurrentUser();
+  document.body.dataset.role = 'viewer';
+  document.getElementById('login-overlay').style.display = 'flex';
+  // 如果有记住，填回去；否则清空
+  const rem = (() => { try { return JSON.parse(localStorage.getItem(REMEMBER_KEY)); } catch(e) { return null; } })();
+  document.getElementById('login-username').value = rem ? rem.name : '';
+  document.getElementById('login-password').value = rem ? rem.pwd  : '';
+  document.getElementById('login-remember').checked = !!rem;
+  document.getElementById('login-error').textContent = '';
+}
+
+// ── 修改密码 ──
+function openChangePwd() {
+  document.getElementById('pwd-old').value = '';
+  document.getElementById('pwd-new').value = '';
+  document.getElementById('pwd-confirm').value = '';
+  document.getElementById('pwd-error').textContent = '';
+  document.getElementById('change-pwd-overlay').style.display = 'flex';
+}
+function closeChangePwd() {
+  document.getElementById('change-pwd-overlay').style.display = 'none';
+}
+function doChangePwd() {
+  const oldPwd = document.getElementById('pwd-old').value;
+  const newPwd = document.getElementById('pwd-new').value;
+  const confirm= document.getElementById('pwd-confirm').value;
+  const errEl  = document.getElementById('pwd-error');
+  const cur = getCurrentUser();
+  if (!cur) return;
+  const users = getUsers();
+  const u = users.find(x => x.name === cur.name);
+  if (!u || u.password !== oldPwd) { errEl.textContent = '当前密码不正确'; return; }
+  if (newPwd.length < 4) { errEl.textContent = '新密码至少需要4位'; return; }
+  if (newPwd !== confirm)  { errEl.textContent = '两次输入的新密码不一致'; return; }
+  u.password = newPwd;
+  saveUsers(users);
+  // 同步更新记住的密码
+  const rem = (() => { try { return JSON.parse(localStorage.getItem(REMEMBER_KEY)); } catch(e) { return null; } })();
+  if (rem && rem.name === cur.name) {
+    localStorage.setItem(REMEMBER_KEY, JSON.stringify({ name: rem.name, pwd: newPwd }));
+  }
+  errEl.style.color = '#059669';
+  errEl.textContent = '密码修改成功！';
+  setTimeout(() => closeChangePwd(), 1200);
+}
+document.getElementById('change-pwd-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeChangePwd();
+});
+
+function applyCurrentUser() {
+  const u = getCurrentUser();
+  if (!u) return;
+  document.getElementById('header-username').textContent = u.display || u.name;
+  const tag = document.getElementById('header-role-tag');
+  tag.textContent = ROLE_LABELS[u.role] || u.role;
+  tag.className   = 'header-role-tag role-' + u.role;
+  document.body.dataset.role = u.role;
+  const isAdmin = u.role === 'admin';
+  document.getElementById('dropdown-settings').style.display = isAdmin ? '' : 'none';
+  // 登录后默认进入个人工作台
+  isMyWorkspaceActive = false; // 重置状态，确保保存逻辑正确
+  activateMyWorkspace(u.display || u.name);
+}
+
+// ── 系统设置面板 ──
+function openSettings() {
+  document.getElementById('settings-search').value = '';
+  renderSettingsTable();
+  document.getElementById('settings-overlay').style.display = 'flex';
+}
+function closeSettings() {
+  document.getElementById('settings-overlay').style.display = 'none';
+}
+
+function avatarColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[Math.abs(h)];
+}
+
+function renderSettingsTable() {
+  const q    = (document.getElementById('settings-search').value || '').toLowerCase();
+  const all  = getUsers();
+  const list = q ? all.filter(u => u.name.toLowerCase().includes(q) || (u.display||'').toLowerCase().includes(q)) : all;
+  const cur  = getCurrentUser();
+  document.getElementById('settings-user-count').textContent = all.length;
+
+  document.getElementById('settings-tbody').innerHTML = list.map(u => {
+    const isMe = cur && u.name === cur.name;
+    const opts = ['admin','member','viewer'].map(r =>
+      `<option value="${r}"${u.role===r?' selected':''}>${ROLE_LABELS[r]}</option>`
+    ).join('');
+    return `<tr>
+      <td><div class="user-cell">
+        <div class="user-avatar-sm" style="background:${avatarColor(u.name)}">${(u.display||u.name).charAt(0)}</div>
+        <div>
+          <div class="user-name-sm">${u.display||u.name}${isMe?'<span class="tag-me">我</span>':''}</div>
+          <div class="user-sub">${u.name}</div>
+        </div>
+      </div></td>
+      <td><select class="role-select r-${u.role}" data-uname="${u.name}" onchange="changeUserRole(this)">${opts}</select></td>
+      <td><button class="btn-reset-pwd" onclick="resetUserPwd('${u.name.replace(/'/g,"\\'")}')">重置密码</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function changeUserRole(sel) {
+  const uname   = sel.dataset.uname;
+  const newRole = sel.value;
+  const users   = getUsers();
+  const u       = users.find(x => x.name === uname);
+  if (!u) return;
+  const cur = getCurrentUser();
+  if (cur && cur.name === uname && newRole !== 'admin') {
+    if (!confirm('您正在修改自己的角色，将失去管理员权限，确认继续？')) {
+      sel.value = u.role; return;
+    }
+  }
+  u.role = newRole;
+  saveUsers(users);
+  sel.className = `role-select r-${newRole}`;
+  if (cur && cur.name === uname) {
+    cur.role = newRole; setCurrentUser(cur); applyCurrentUser();
+  }
+}
+
+function resetUserPwd(uname) {
+  const users = getUsers();
+  const u = users.find(x => x.name === uname);
+  if (!u) return;
+  if (!confirm(`确认将「${u.display||u.name}」的密码重置为 123456？`)) return;
+  u.password = '123456';
+  saveUsers(users);
+  alert('密码已重置为 123456');
+}
+
+function openAddUserPrompt() {
+  const name = prompt('登录账号（建议与提单人姓名保持一致）：');
+  if (!name || !name.trim()) return;
+  const users = getUsers();
+  if (users.find(u => u.name === name.trim())) { alert('该账号已存在'); return; }
+  users.push({ name: name.trim(), display: name.trim(), password: '123456', role: 'viewer' });
+  saveUsers(users);
+  renderSettingsTable();
+}
+
+// 事件绑定
+document.getElementById('settings-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeSettings();
+});
+document.getElementById('settings-search').addEventListener('input', renderSettingsTable);
+// 右上角用户下拉菜单
+document.getElementById('header-user-trigger').addEventListener('click', e => {
+  e.stopPropagation();
+  document.getElementById('header-user').classList.toggle('open');
+});
+document.addEventListener('click', () => {
+  document.getElementById('header-user').classList.remove('open');
+});
+// 点击下拉菜单项后关闭
+document.getElementById('user-dropdown').addEventListener('click', () => {
+  document.getElementById('header-user').classList.remove('open');
+});
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('login-username').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-password').focus();
+});
+
+// ── 可搜索下拉 ──
+const ssInstances = {};
+
+function makeSearchableSelect(selectId) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+
+  // 创建包裹结构
+  const wrap = document.createElement('div');
+  wrap.className = 'ss-wrap';
+  sel.parentNode.insertBefore(wrap, sel);
+  wrap.appendChild(sel);
+  sel.style.display = 'none';
+
+  const trigger = document.createElement('div');
+  trigger.className = 'ss-trigger';
+  trigger.tabIndex = 0;
+
+  const dropdown = document.createElement('div');
+  dropdown.className = 'ss-dropdown';
+
+  const searchInput = document.createElement('input');
+  searchInput.className = 'ss-search';
+  searchInput.placeholder = '搜索…';
+  searchInput.type = 'text';
+
+  const list = document.createElement('div');
+  list.className = 'ss-list';
+
+  dropdown.appendChild(searchInput);
+  dropdown.appendChild(list);
+  wrap.appendChild(trigger);
+  wrap.appendChild(dropdown);
+
+  function getLabel() {
+    const opt = sel.options[sel.selectedIndex];
+    return opt ? opt.text : '';
+  }
+
+  function syncTrigger() {
+    const v = sel.value;
+    trigger.textContent = v ? getLabel() : (sel.options[0] ? sel.options[0].text : '');
+    if (v) trigger.classList.add('has-value');
+    else trigger.classList.remove('has-value');
+  }
+
+  function buildList(kw) {
+    list.innerHTML = '';
+    const q = (kw || '').toLowerCase();
+    Array.from(sel.options).forEach((opt, i) => {
+      if (q && i !== 0 && !opt.text.toLowerCase().includes(q)) return;
+      const item = document.createElement('div');
+      item.className = 'ss-option' + (opt.value === sel.value ? ' ss-selected' : '');
+      item.textContent = opt.text;
+      item.addEventListener('mousedown', e => {
+        e.preventDefault();
+        sel.value = opt.value;
+        sel.dispatchEvent(new Event('change'));
+        close();
+      });
+      list.appendChild(item);
+    });
+  }
+
+  function open() {
+    // close all others first
+    Object.values(ssInstances).forEach(inst => { if (inst !== instance) inst.close(); });
+    wrap.classList.add('open');
+    searchInput.value = '';
+    buildList('');
+    searchInput.focus();
+  }
+
+  function close() {
+    wrap.classList.remove('open');
+    syncTrigger();
+  }
+
+  trigger.addEventListener('click', () => {
+    wrap.classList.contains('open') ? close() : open();
+  });
+  trigger.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+  });
+
+  searchInput.addEventListener('input', () => buildList(searchInput.value));
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Escape') close();
+  });
+
+  // 点击外部关闭
+  document.addEventListener('mousedown', e => {
+    if (!wrap.contains(e.target)) close();
+  });
+
+  // 监听原生 select 值变化（程序赋值）
+  sel.addEventListener('change', syncTrigger);
+
+  syncTrigger();
+
+  const instance = {
+    refresh() {
+      syncTrigger();
+      if (wrap.classList.contains('open')) buildList(searchInput.value);
+    },
+    close
+  };
+  ssInstances[selectId] = instance;
+}
+
+function refreshSearchSelects() {
+  Object.keys(ssInstances).forEach(id => ssInstances[id].refresh());
+}
+
+['f-studio', 'f-game', 'f-submitter', 'f-status'].forEach(makeSearchableSelect);
+
+// f-game 选项动态重建时同步刷新
+new MutationObserver(() => {
+  if (ssInstances['f-game']) ssInstances['f-game'].refresh();
+}).observe(document.getElementById('f-game'), { childList: true });
+
+// ── 初始化 ──
+// 强制重建用户数据（确保账号与提单人列表同步）
+(function resetUsers() {
+  const submitters = [...new Set(ALL_DATA.map(r => r.submitter).filter(Boolean))];
+  const existing = getUsers();
+  const existingMap = {};
+  existing.forEach(u => { existingMap[u.name] = u; });
+  const newUsers = [
+    existingMap['admin'] || { name: 'admin', display: '系统管理员', password: 'admin123', role: 'admin' },
+    ...submitters.map(n => existingMap[n] || { name: n, display: n, password: '123456', role: 'member' })
+  ];
+  // 保留已有用户的密码和角色，只补充缺失的
+  newUsers.forEach(u => { if (u.role !== 'admin' && u.role === 'viewer') u.role = 'member'; });
+  saveUsers(newUsers);
+})();
+migrateRolesToMember();
+document.body.dataset.role = 'viewer';
+// 自动填入记住的账号密码
+const _rem = (() => { try { return JSON.parse(localStorage.getItem(REMEMBER_KEY)); } catch(e) { return null; } })();
+if (_rem) {
+  document.getElementById('login-username').value = _rem.name;
+  document.getElementById('login-password').value = _rem.pwd;
+  document.getElementById('login-remember').checked = true;
+}
+const _savedUser = getCurrentUser();
+if (_savedUser) {
+  document.getElementById('login-overlay').style.display = 'none';
+  applyCurrentUser();
+}
 </script>
 </body>
 </html>
