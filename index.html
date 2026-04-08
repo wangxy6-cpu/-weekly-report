@@ -3466,6 +3466,23 @@ const ALL_DATA = [
   }
 ];
 
+// ── 管理员编辑持久化（localStorage） ──
+const EDITS_KEY = 'wr_edits';   // { [link]: { 修改后字段 } }
+const ADDED_KEY = 'wr_added';   // [ 新增的完整记录 ]
+
+(function applyPersistedEdits() {
+  try {
+    const edits = JSON.parse(localStorage.getItem(EDITS_KEY) || '{}');
+    const added = JSON.parse(localStorage.getItem(ADDED_KEY) || '[]');
+    // 将已有记录的改动覆盖回 ALL_DATA（按 link 匹配）
+    ALL_DATA.forEach(r => {
+      if (r.link && edits[r.link]) Object.assign(r, edits[r.link]);
+    });
+    // 追加管理员新增的记录
+    added.forEach(r => ALL_DATA.push(r));
+  } catch(e) {}
+})();
+
 const STATUS_MAP = {
   "已上线":   ["status-online",    "已上线"],
   "进行中":   ["status-ongoing",   "进行中"],
@@ -3549,12 +3566,15 @@ function isOnlineOutdated(r) {
 
 // 渲染已上线汇总区（不受筛选条件影响，显示所有超期已上线记录）
 function renderOnlineSection() {
-  let outdated = ALL_DATA.filter(r => isOnlineOutdated(r));
-  // 个人工作台模式：只展示当前登录用户的数据
+  let outdated;
   if (isMyWorkspaceActive) {
+    // 个人工作台：展示当前登录用户的全部已上线记录
     const cur = getCurrentUser();
     const myName = cur ? (cur.display || cur.name) : '';
-    outdated = outdated.filter(r => r.submitter === myName);
+    outdated = ALL_DATA.filter(r => r.status === '已上线' && r.submitter === myName);
+  } else {
+    // 工作室视图：只显示超期已上线记录（本周之前上线）
+    outdated = ALL_DATA.filter(r => isOnlineOutdated(r));
   }
   const sec = document.getElementById("online-section");
   if (!outdated.length) { sec.style.display = "none"; return; }
@@ -4113,6 +4133,12 @@ function saveModal() {
       eta:       fromDateInput(document.getElementById("edit-eta").value),
       anomaly:   document.getElementById("edit-anomaly").value.trim() || "无",
     });
+    // 持久化新增记录
+    try {
+      const added = JSON.parse(localStorage.getItem(ADDED_KEY) || '[]');
+      added.push(ALL_DATA[ALL_DATA.length - 1]);
+      localStorage.setItem(ADDED_KEY, JSON.stringify(added));
+    } catch(e) {}
   } else {
     if (editingIdx < 0) return;
     const item = ALL_DATA[editingIdx];
@@ -4124,6 +4150,14 @@ function saveModal() {
     item.expect  = fromDateInput(document.getElementById("edit-expect").value);
     item.eta     = fromDateInput(document.getElementById("edit-eta").value);
     item.anomaly = document.getElementById("edit-anomaly").value.trim();
+    // 持久化对已有记录的修改
+    try {
+      const edits = JSON.parse(localStorage.getItem(EDITS_KEY) || '{}');
+      edits[item.link] = { task: item.task, link: item.link, status: item.status,
+        update: item.update, updateDate: item.updateDate, expect: item.expect,
+        eta: item.eta, anomaly: item.anomaly };
+      localStorage.setItem(EDITS_KEY, JSON.stringify(edits));
+    } catch(e) {}
   }
   closeModal();
   applyFilter();
