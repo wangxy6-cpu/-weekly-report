@@ -3842,18 +3842,17 @@ function renderOnlineSection() {
   let outdated;
   const { studio, game } = getFilters();
   if (isMyWorkspaceActive) {
-    // 个人工作台：展示当前用户非本周的已上线记录（本周的显示在主区）
+    // 个人工作台：展示当前用户全部已上线记录（含当周）
     const cur = getCurrentUser();
     const myName = cur ? (cur.display || cur.name) : '';
     outdated = ALL_DATA.filter(r =>
       r.status === '已上线' &&
-      r.submitter === (myWorkspaceSubmitter || myName) &&
-      !isCurrentWeek(r.updateDate)
+      r.submitter === (myWorkspaceSubmitter || myName)
     );
   } else {
-    // 工作室视图：只显示超期已上线记录，且受工作室/游戏筛选约束
+    // 工作室视图：全部已上线记录，受工作室/游戏筛选约束
     outdated = ALL_DATA.filter(r => {
-      if (!isOnlineOutdated(r)) return false;
+      if (r.status !== '已上线') return false;
       if (studio && r.studio !== studio) return false;
       if (game   && r.game   !== game)   return false;
       return true;
