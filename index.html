@@ -969,7 +969,7 @@
           <select class="filter-select" id="f-status">
             <option value="">全部状态</option>
             <option value="已上线">已上线</option>
-            <option value="已完成">已完成（无需发布）</option>
+            <option value="已完成（无需发布）">已完成（无需发布）</option>
             <option value="待上线">待上线</option>
             <option value="进行中">进行中</option>
             <option value="已排期">已排期</option>
@@ -1068,6 +1068,7 @@
           <option value="待排期">待排期</option>
           <option value="暂未排期">暂未排期</option>
           <option value="已完成">已完成</option>
+          <option value="已完成（无需发布）">已完成（无需发布）</option>
           <option value="停滞">停滞</option>
         </select>
       </div>
@@ -3758,19 +3759,20 @@ const DATA_VERSION = '1775790032286';
 })();
 
 const STATUS_MAP = {
-  "已上线":   ["status-online",    "已上线"],
-  "进行中":   ["status-ongoing",   "进行中"],
-  "待排期":   ["status-pending",   "待排期"],
-  "暂未排期": ["status-pending",   "暂未排期"],
-  "已完成":   ["status-done",      "已完成"],
-  "已排期":   ["status-scheduled", "已排期"],
-  "待上线":   ["status-online",    "待上线"],
-  "停滞":     ["status-other",     "停滞"],
+  "已上线":           ["status-online",    "已上线"],
+  "进行中":           ["status-ongoing",   "进行中"],
+  "待排期":           ["status-pending",   "待排期"],
+  "暂未排期":         ["status-pending",   "暂未排期"],
+  "已完成":           ["status-done",      "已完成"],
+  "已完成（无需发布）": ["status-done",     "已完成（无需发布）"],
+  "已排期":           ["status-scheduled", "已排期"],
+  "待上线":           ["status-online",    "待上线"],
+  "停滞":             ["status-other",     "停滞"],
 };
 
 // 状态 → CSS class（用于 select 着色）
 const STATUS_CLASS = {
-  "已上线": "s-online", "已完成": "s-done", "待上线": "s-online",
+  "已上线": "s-online", "已完成": "s-done", "已完成（无需发布）": "s-done", "待上线": "s-online",
   "进行中": "s-ongoing",
   "已排期": "s-scheduled",
   "待排期": "s-pending", "暂未排期": "s-pending",
@@ -3779,7 +3781,7 @@ const STATUS_CLASS = {
 function getStatusClass(s) { return STATUS_CLASS[s] || "s-other"; }
 
 // 所有状态选项
-const ALL_STATUSES = ["已上线","待上线","进行中","已排期","待排期","暂未排期","已完成","停滞"];
+const ALL_STATUSES = ["已上线","待上线","进行中","已排期","待排期","暂未排期","已完成","已完成（无需发布）","停滞"];
 
 // 日期转换："2026.04.30" → "2026-04-30"（供 date input 使用）
 function toDateInput(s) {
@@ -3833,7 +3835,7 @@ function isCurrentWeek(dateStr) {
 
 // 已上线且超过本周（应移出主任务区，仅在已上线汇总区显示）
 function isOnlineOutdated(r) {
-  if (r.status !== "已上线") return false;
+  if (r.status !== "已上线" && r.status !== "已完成（无需发布）") return false;
   if (!r.updateDate) return false;
   return !isCurrentWeek(r.updateDate);
 }
@@ -4013,7 +4015,7 @@ function render(data) {
 
 // ── 本周动态 ──
 const SUMMARY_STATUS_ORDER = [
-  { label: "已上线 / 已完成（无需发布）", statuses: ["已上线","已完成"], dot: "#10b981" },
+  { label: "已上线 / 已完成（无需发布）", statuses: ["已上线","已完成","已完成（无需发布）"], dot: "#10b981" },
   { label: "待上线",                      statuses: ["待上线"],          dot: "#06b6d4" },
   { label: "进行中",                      statuses: ["进行中"],          dot: "#3b82f6" },
   { label: "已排期",                      statuses: ["已排期"],          dot: "#8b5cf6" },
