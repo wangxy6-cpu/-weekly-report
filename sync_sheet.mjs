@@ -117,6 +117,9 @@ for (const sheet of SHEETS) {
     const etaCell = col('预计对外时间（技术中台）', hmap['预计对外时间（技术中台）'] ?? 6);
     const anCell = col('异常情况', hmap['异常情况'] ?? 7);
 
+    const rawStatus = getText(col('实际进度', 2));
+    const status = rawStatus === '已完成（无需发布）' ? '已上线' : rawStatus;
+
     allRecords.push({
       studio: sheet.name,
       game: currentGame,
@@ -124,7 +127,7 @@ for (const sheet of SHEETS) {
       link: getLink(taskCell),
       submitter,
       avatar: '',
-      status: getText(col('实际进度', 2)),
+      status,
       update: getText(col('本周情况同步', 3)),
       updateDate: typeof utCell === 'number' ? excelToStr(utCell) : '',
       expect: typeof ecCell === 'number' ? excelToStr(ecCell) : getText(ecCell),
