@@ -140,8 +140,22 @@ process.stderr.write(`\n共 ${allRecords.length} 条记录\n`);
 
 // 更新 index.html
 let html = readFileSync(INDEX_FILE, 'utf-8');
+const syncVersion = Date.now().toString();
 const newBlock = `const ALL_DATA = ${JSON.stringify(allRecords, null, 2)};`;
-const newHtml = html.replace(/const ALL_DATA = \[[\s\S]*?\n\];/, newBlock);
+let newHtml = html.replace(/const ALL_DATA = \[[\s\S]*?\n\];/, newBlock);
+
+// 同时更新数据版本号
+newHtml = newHtml.replace(/const DATA_VERSION = '[^']*';/, `const DATA_VERSION = '${syncVersion}';`);
+
+// 重建 f-submitter 下拉选项（确保包含所有提单人）
+const submitters = [...new Set(allRecords.map(r => r.submitter).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh'));
+const submitterOptions = '<option value="">全部提单人</option>' +
+  submitters.map(s => `<option value="${s}">${s}</option>`).join('');
+newHtml = newHtml.replace(
+  /(<select[^>]+id="f-submitter"[^>]*>)[\s\S]*?(<\/select>)/,
+  `$1\n            ${submitterOptions}\n          $2`
+);
+
 if (newHtml === html) {
   process.stderr.write('❌ 未匹配到 ALL_DATA\n'); process.exit(1);
 }

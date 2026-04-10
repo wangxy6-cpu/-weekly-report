@@ -961,7 +961,7 @@
         <div class="filter-group">
           <span class="filter-label">提单人</span>
           <select class="filter-select" id="f-submitter">
-            <option value="">全部提单人</option><option value="91-肖文琛">91-肖文琛</option><option value="蔡宸浩">蔡宸浩</option><option value="曹鹏">曹鹏</option><option value="曾文森">曾文森</option><option value="陈洁">陈洁</option><option value="陈禄发">陈禄发</option><option value="杜婕">杜婕</option><option value="段旭">段旭</option><option value="范洁敏">范洁敏</option><option value="方涛">方涛</option><option value="冯晓阳">冯晓阳</option><option value="高志威">高志威</option><option value="郭婉菁">郭婉菁</option><option value="侯钦瀚">侯钦瀚</option><option value="胡诗情">胡诗情</option><option value="黄天赐">黄天赐</option><option value="李文政">李文政</option><option value="李宣敬">李宣敬</option><option value="李逸欢">李逸欢</option><option value="林丽娟">林丽娟</option><option value="林庆钿">林庆钿</option><option value="林雪">林雪</option><option value="林志伟">林志伟</option><option value="刘阳">刘阳</option><option value="刘宇航">刘宇航</option><option value="聂小慧">聂小慧</option><option value="潘虹余">潘虹余</option><option value="彭思源">彭思源</option><option value="彭鑫尧">彭鑫尧</option><option value="钱智强">钱智强</option><option value="邱单娜">邱单娜</option><option value="提单人">提单人</option><option value="兔力-陈勉">兔力-陈勉</option><option value="汪博">汪博</option><option value="王俊杰">王俊杰</option><option value="王统军">王统军</option><option value="王哲">王哲</option><option value="魏于博">魏于博</option><option value="温敏怡">温敏怡</option><option value="肖长发">肖长发</option><option value="谢誉瑾">谢誉瑾</option><option value="徐浩">徐浩</option><option value="徐梓健">徐梓健</option><option value="杨晓婕">杨晓婕</option><option value="喻泽远">喻泽远</option><option value="张世鑫">张世鑫</option><option value="郑龙">郑龙</option><option value="郑少鹏">郑少鹏</option><option value="钟超平">钟超平</option><option value="卓超">卓超</option><option value="卓奕敏">卓奕敏</option><option value="邹志鹏">邹志鹏</option>
+            <option value="">全部提单人</option><option value="91-肖文琛">91-肖文琛</option><option value="蔡宸浩">蔡宸浩</option><option value="曹鹏">曹鹏</option><option value="曾文森">曾文森</option><option value="陈洁">陈洁</option><option value="陈禄发">陈禄发</option><option value="杜婕">杜婕</option><option value="段旭">段旭</option><option value="范洁敏">范洁敏</option><option value="方涛">方涛</option><option value="冯晓阳">冯晓阳</option><option value="高志威">高志威</option><option value="郭婉菁">郭婉菁</option><option value="侯钦瀚">侯钦瀚</option><option value="胡诗情">胡诗情</option><option value="黄天赐">黄天赐</option><option value="李文政">李文政</option><option value="李宣敬">李宣敬</option><option value="李逸欢">李逸欢</option><option value="林丽娟">林丽娟</option><option value="林联玮">林联玮</option><option value="林庆钿">林庆钿</option><option value="林雪">林雪</option><option value="林志伟">林志伟</option><option value="刘燕">刘燕</option><option value="刘阳">刘阳</option><option value="刘宇航">刘宇航</option><option value="聂小慧">聂小慧</option><option value="潘虹余">潘虹余</option><option value="彭思源">彭思源</option><option value="彭鑫尧">彭鑫尧</option><option value="钱智强">钱智强</option><option value="邱单娜">邱单娜</option><option value="兔力-陈勉">兔力-陈勉</option><option value="汪博">汪博</option><option value="王俊杰">王俊杰</option><option value="王统军">王统军</option><option value="王哲">王哲</option><option value="魏于博">魏于博</option><option value="温敏怡">温敏怡</option><option value="小新-李楠（lin4）">小新-李楠（lin4）</option><option value="肖长发">肖长发</option><option value="谢誉瑾">谢誉瑾</option><option value="徐浩">徐浩</option><option value="徐梓健">徐梓健</option><option value="杨晓婕">杨晓婕</option><option value="喻泽远">喻泽远</option><option value="张世鑫">张世鑫</option><option value="郑龙">郑龙</option><option value="郑少鹏">郑少鹏</option><option value="钟超平">钟超平</option><option value="周明哲">周明哲</option><option value="卓超">卓超</option><option value="卓奕敏">卓奕敏</option><option value="邹志鹏">邹志鹏</option><option value="Arik-曾富龙">Arik-曾富龙</option>
           </select>
         </div>
         <div class="filter-group">
@@ -3742,19 +3742,18 @@ const ALL_DATA = [
 ];
 
 // ── 管理员编辑持久化（localStorage） ──
-const EDITS_KEY = 'wr_edits';   // { [link]: { 修改后字段 } }
-const ADDED_KEY = 'wr_added';   // [ 新增的完整记录 ]
+const EDITS_KEY   = 'wr_edits';
+const ADDED_KEY   = 'wr_added';
+const VER_KEY     = 'wr_data_ver';
+const DATA_VERSION = '1775788397288';
 
-(function applyPersistedEdits() {
+// 每次加载时彻底清除历史 localStorage 编辑覆盖，确保数据源始终为准
+// UI 编辑仅在当前会话内有效，刷新后恢复 sync 数据
+(function clearPersistedEdits() {
   try {
-    const edits = JSON.parse(localStorage.getItem(EDITS_KEY) || '{}');
-    const added = JSON.parse(localStorage.getItem(ADDED_KEY) || '[]');
-    // 将已有记录的改动覆盖回 ALL_DATA（按 link 匹配）
-    ALL_DATA.forEach(r => {
-      if (r.link && edits[r.link]) Object.assign(r, edits[r.link]);
-    });
-    // 追加管理员新增的记录
-    added.forEach(r => ALL_DATA.push(r));
+    localStorage.removeItem(EDITS_KEY);
+    localStorage.removeItem(ADDED_KEY);
+    localStorage.removeItem(VER_KEY);
   } catch(e) {}
 })();
 
@@ -3846,7 +3845,7 @@ function renderOnlineSection() {
     // 个人工作台：展示当前登录用户的全部已上线记录
     const cur = getCurrentUser();
     const myName = cur ? (cur.display || cur.name) : '';
-    outdated = ALL_DATA.filter(r => r.status === '已上线' && r.submitter === myName);
+    outdated = ALL_DATA.filter(r => r.status === '已上线' && r.submitter === (myWorkspaceSubmitter || myName));
   } else {
     // 工作室视图：只显示超期已上线记录（本周之前上线）
     outdated = ALL_DATA.filter(r => isOnlineOutdated(r));
@@ -4101,7 +4100,8 @@ function getFilters() {
   return {
     studio:    document.getElementById("f-studio").value,
     game:      document.getElementById("f-game").value,
-    submitter: document.getElementById("f-submitter").value,
+    // 个人工作台模式下，直接用解析后的提单人名，不依赖 select 的 option 是否存在
+    submitter: isMyWorkspaceActive ? myWorkspaceSubmitter : document.getElementById("f-submitter").value,
     search:    document.getElementById("f-search").value.trim(),
     status:    document.getElementById("f-status").value,
   };
@@ -4191,6 +4191,7 @@ document.getElementById("sidebar-home-btn").addEventListener("click", () => {
 
 // 个人工作台状态
 let isMyWorkspaceActive = false;
+let myWorkspaceSubmitter = ''; // 个人工作台当前用户对应的提单人名（解析后）
 // 个人工作台独立筛选状态
 let myWorkspaceFilter = { studio: '', game: '', submitter: '', search: '', status: '' };
 // 工作室视图筛选状态（切换回工作室时恢复）
@@ -4222,10 +4223,16 @@ function activateMyWorkspace(name) {
   document.querySelectorAll(".nav-studio, .nav-game").forEach(e => e.classList.remove("active"));
   document.getElementById("sidebar-home-btn").classList.remove("active");
   document.getElementById("sidebar-my-btn").classList.add("active");
+  // 个人工作台：在 ALL_DATA 提单人列表中找最佳匹配（支持部分匹配，解决账号名与飞书名不一致问题）
+  const submitters = [...new Set(ALL_DATA.map(r => r.submitter).filter(Boolean))];
+  const resolvedName = submitters.find(s => s === name)
+    || submitters.find(s => s.includes(name) || name.includes(s))
+    || name;
+  myWorkspaceSubmitter = resolvedName; // 全局记录，供 applyFilter/renderSummary 直接使用
   // 个人工作台始终重置为默认筛选
   document.getElementById("f-studio").value    = "";
   document.getElementById("f-game").value      = "";
-  document.getElementById("f-submitter").value = name;
+  document.getElementById("f-submitter").value = resolvedName;
   document.getElementById("f-search").value    = "";
   document.getElementById("f-status").value    = "";
   refreshSearchSelects();
@@ -4251,6 +4258,7 @@ function deactivateMyWorkspace() {
   document.getElementById("btn-add").style.display = "";
   document.getElementById("btn-import").style.display = "";
   // 恢复工作室筛选状态，提单人始终清空
+  myWorkspaceSubmitter = '';
   restoreFilterFrom(studioFilter);
   document.getElementById("f-submitter").value = "";
   studioFilter.submitter = "";
@@ -4409,12 +4417,6 @@ function saveModal() {
       eta:       fromDateInput(document.getElementById("edit-eta").value),
       anomaly:   document.getElementById("edit-anomaly").value.trim() || "无",
     });
-    // 持久化新增记录
-    try {
-      const added = JSON.parse(localStorage.getItem(ADDED_KEY) || '[]');
-      added.push(ALL_DATA[ALL_DATA.length - 1]);
-      localStorage.setItem(ADDED_KEY, JSON.stringify(added));
-    } catch(e) {}
   } else {
     if (editingIdx < 0) return;
     const item = ALL_DATA[editingIdx];
@@ -4426,14 +4428,6 @@ function saveModal() {
     item.expect  = fromDateInput(document.getElementById("edit-expect").value);
     item.eta     = fromDateInput(document.getElementById("edit-eta").value);
     item.anomaly = document.getElementById("edit-anomaly").value.trim();
-    // 持久化对已有记录的修改
-    try {
-      const edits = JSON.parse(localStorage.getItem(EDITS_KEY) || '{}');
-      edits[item.link] = { task: item.task, link: item.link, status: item.status,
-        update: item.update, updateDate: item.updateDate, expect: item.expect,
-        eta: item.eta, anomaly: item.anomaly };
-      localStorage.setItem(EDITS_KEY, JSON.stringify(edits));
-    } catch(e) {}
   }
   closeModal();
   applyFilter();
