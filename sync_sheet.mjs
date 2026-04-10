@@ -41,11 +41,11 @@ function excelToStr(serial) {
 
 function getText(cell) {
   if (cell == null) return '';
-  if (typeof cell === 'string') return cell;
+  if (typeof cell === 'string') return cell.trim();
   if (typeof cell === 'number') return excelToStr(cell);
-  if (Array.isArray(cell)) return cell.map(s => (s && typeof s === 'object') ? (s.text||'') : '').join('');
-  if (typeof cell === 'object') return cell.text || cell.name || '';
-  return String(cell);
+  if (Array.isArray(cell)) return cell.map(s => (s && typeof s === 'object') ? (s.text||'') : '').join('').trim();
+  if (typeof cell === 'object') return (cell.text || cell.name || '').trim();
+  return String(cell).trim();
 }
 
 function getLink(cell) {
