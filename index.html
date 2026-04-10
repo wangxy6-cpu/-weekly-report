@@ -3837,17 +3837,23 @@ function isOnlineOutdated(r) {
   return !isCurrentWeek(r.updateDate);
 }
 
-// 渲染已上线汇总区（不受筛选条件影响，显示所有超期已上线记录）
+// 渲染历史已上线区（受工作室/游戏筛选影响）
 function renderOnlineSection() {
   let outdated;
+  const { studio, game } = getFilters();
   if (isMyWorkspaceActive) {
     // 个人工作台：展示当前登录用户的全部已上线记录
     const cur = getCurrentUser();
     const myName = cur ? (cur.display || cur.name) : '';
     outdated = ALL_DATA.filter(r => r.status === '已上线' && r.submitter === (myWorkspaceSubmitter || myName));
   } else {
-    // 工作室视图：只显示超期已上线记录（本周之前上线）
-    outdated = ALL_DATA.filter(r => isOnlineOutdated(r));
+    // 工作室视图：只显示超期已上线记录，且受工作室/游戏筛选约束
+    outdated = ALL_DATA.filter(r => {
+      if (!isOnlineOutdated(r)) return false;
+      if (studio && r.studio !== studio) return false;
+      if (game   && r.game   !== game)   return false;
+      return true;
+    });
   }
   const sec = document.getElementById("online-section");
   if (!outdated.length) { sec.style.display = "none"; return; }
