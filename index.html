@@ -1131,16 +1131,15 @@
       <label>账号</label>
       <input type="text" class="login-input" id="login-username" placeholder="飞书名（例：王星宇）" autocomplete="username">
     </div>
-    <div class="login-field">
+    <div class="login-field" style="display:none">
       <label>密码</label>
       <input type="password" class="login-input" id="login-password" placeholder="请输入密码" autocomplete="current-password">
     </div>
-    <label class="login-remember">
+    <label class="login-remember" style="display:none">
       <input type="checkbox" id="login-remember"> 记住账号密码
     </label>
     <div class="login-error" id="login-error"></div>
     <button class="btn-login" onclick="doLogin()">登 录</button>
-    <div class="login-hint">初始密码：123456</div>
   </div>
 </div>
 
@@ -4271,6 +4270,127 @@ function avatarHtml(name, url) {
     : `<div class="avatar-fallback">${init}</div>`;
 }
 
+function renderMyWorkspace(data) {
+  const container = document.getElementById("cards-container");
+  if (!data.length) {
+    container.innerHTML = '<div class="empty">暂无符合条件的记录</div>';
+    document.getElementById("result-count").textContent = "0 条";
+    return;
+  }
+
+  const STATUS_SORT_ORDER = ["已上线","已完成","待上线","进行中","已排期","停滞"];
+  const statusRank = s => { const i = STATUS_SORT_ORDER.indexOf(s); return i === -1 ? 99 : i; };
+  const dateVal = d => {
+    if (!d) return 0;
+    const m = d.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+    return m ? parseInt(m[1])*10000 + parseInt(m[2])*100 + parseInt(m[3]) : 0;
+  };
+
+  // 按工作室 → 游戏分组
+  const studioMap = {};
+  for (const r of data) {
+    const s = r.studio || "（未分类）";
+    const g = r.game   || "（未分类项目）";
+    if (!studioMap[s]) studioMap[s] = {};
+    if (!studioMap[s][g]) studioMap[s][g] = [];
+    studioMap[s][g].push(r);
+  }
+
+  // 组内按状态+日期排序
+  for (const games of Object.values(studioMap)) {
+    for (const items of Object.values(games)) {
+      items.sort((a, b) => {
+        const sr = statusRank(a.status) - statusRank(b.status);
+        if (sr !== 0) return sr;
+        return dateVal(b.updateDate) - dateVal(a.updateDate);
+      });
+    }
+  }
+
+  let totalCount = 0;
+  const html = Object.entries(studioMap).map(([studioName, gameMap]) => {
+    const studioCount = Object.values(gameMap).reduce((n, items) => n + items.length, 0);
+    const gamesHtml = Object.entries(gameMap).map(([gameName, items]) => {
+      totalCount += items.length;
+      const rowsHtml = items.map(item => {
+        const idx = ALL_DATA.indexOf(item);
+        const TASK_MAX = 49;
+        const taskText = item.task.length > TASK_MAX ? item.task.slice(0, TASK_MAX) + '...' : item.task;
+        const taskDisplay = item.link
+          ? `<a href="${item.link}" target="_blank" class="task-link" title="${item.task}">${taskText}</a>`
+          : `<span class="task-no-link" title="${item.task}">${taskText}</span>`;
+        const update = (item.update || "—").replace(/\n/g, "<br>");
+        const anomalyFull = item.anomaly || "无";
+        const anomalyCls = (anomalyFull !== "无" && anomalyFull !== "" && anomalyFull !== "—") ? "anomaly-warn" : "";
+        const ANOMALY_LIMIT = 20;
+        const anomalyCell = anomalyFull.length > ANOMALY_LIMIT
+          ? `<span class="anomaly-short ${anomalyCls}">${anomalyFull}</span><button class="btn-anomaly-detail" data-anomaly="${anomalyFull.replace(/"/g,'&quot;')}">查看详情</button>`
+          : `<span class="${anomalyCls}">${anomalyFull}</span>`;
+        const sc = getStatusClass(item.status);
+        const statusOpts = ALL_STATUSES.map(s =>
+          `<option value="${s}"${s===item.status?" selected":""}>${s}</option>`).join("");
+        const udVal = toDateInput(item.updateDate || "");
+        return `<tr>
+          <td class="col-check"><input type="checkbox" class="row-checkbox" data-idx="${idx}"></td>
+          <td class="col-task">${taskDisplay}</td>
+          <td class="col-status"><select class="status-select ${sc}" data-idx="${idx}">${statusOpts}</select></td>
+          <td class="col-update">${update}</td>
+          <td class="col-update-date"><input type="date" class="inline-date" data-idx="${idx}" data-field="updateDate" value="${udVal}" title="进度更新时间"></td>
+          <td class="col-date"><input type="date" class="inline-date" data-idx="${idx}" data-field="expect" value="${toDateInput(item.expect)}" title="期望完成时间"></td>
+          <td class="col-date"><input type="date" class="inline-date" data-idx="${idx}" data-field="eta" value="${(item.eta && item.eta !== '暂未排期') ? toDateInput(item.eta) : ''}" title="发版时间"></td>
+          <td class="col-anomaly">${anomalyCell}</td>
+          <td class="col-action">
+            <button class="btn-edit" data-idx="${idx}" title="编辑">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11 2l3 3-8 8H3v-3l8-8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="btn-delete" data-idx="${idx}" title="删除">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 10h8l1-10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </td>
+        </tr>`;
+      }).join("");
+
+      return `
+      <section class="person-section" style="border-radius:0;border-top:none;margin-bottom:0">
+        <div class="person-header" style="background:#f0f7ff">
+          <div class="person-identity">
+            <span style="font-size:13px;font-weight:600;color:var(--primary)">${gameName}</span>
+          </div>
+          <span class="person-count">${items.length} 条需求</span>
+        </div>
+        <div class="task-list">
+          <table class="task-table">
+            <thead><tr>
+              <th class="col-check"><input type="checkbox" class="row-checkbox header-check" title="全选"></th>
+              <th class="col-task">任务卡</th>
+              <th class="col-status">状态</th>
+              <th class="col-update">本周进展</th>
+              <th class="col-update-date">进度更新时间</th>
+              <th class="col-date">期望完成时间</th>
+              <th class="col-date">发版时间</th>
+              <th class="col-anomaly">异常情况</th>
+              <th class="col-action"></th>
+            </tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+      </section>`;
+    }).join("");
+
+    return `
+    <div style="margin-bottom:16px;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--bg-card);border-bottom:1px solid var(--border)">
+        <span style="font-size:14px;font-weight:700;color:var(--text-primary)">${studioName}</span>
+        <span style="font-size:11px;color:var(--text-secondary);background:var(--bg);padding:1px 8px;border-radius:20px;border:1px solid var(--border)">${studioCount} 条</span>
+      </div>
+      ${gamesHtml}
+    </div>`;
+  }).join("");
+
+  container.innerHTML = html;
+  document.getElementById("result-count").textContent = `共 ${totalCount} 条`;
+}
+
 function render(data) {
   const container = document.getElementById("cards-container");
   if (!data.length) {
@@ -4495,7 +4615,11 @@ function applyFilter() {
   updateSelectStyle("f-game");
   updateSelectStyle("f-submitter");
   updateSelectStyle("f-status");
-  render(filtered);
+  if (isMyWorkspaceActive) {
+    renderMyWorkspace(filtered);
+  } else {
+    render(filtered);
+  }
   renderOnlineSection();
   renderSummary();
 }
@@ -5041,18 +5165,12 @@ function clearCurrentUser() { sessionStorage.removeItem(SESSION_KEY); }
 
 function doLogin() {
   const name = document.getElementById('login-username').value.trim();
-  const pwd  = document.getElementById('login-password').value;
   const err  = document.getElementById('login-error');
-  if (!name || !pwd) { err.textContent = '请填写账号和密码'; return; }
-  const user = getUsers().find(u => u.name === name && u.password === pwd);
-  if (!user) { err.textContent = '账号或密码错误，请重试'; return; }
+  if (!name) { err.textContent = '请填写账号'; return; }
+  // 自动使用默认密码 123456（所有成员统一密码）
+  const user = getUsers().find(u => u.name === name);
+  if (!user) { err.textContent = '账号不存在，请确认飞书名'; return; }
   err.textContent = '';
-  // 记住账号密码
-  if (document.getElementById('login-remember').checked) {
-    localStorage.setItem(REMEMBER_KEY, JSON.stringify({ name, pwd }));
-  } else {
-    localStorage.removeItem(REMEMBER_KEY);
-  }
   setCurrentUser({ name: user.name, display: user.display || user.name, role: user.role });
   document.getElementById('login-overlay').style.display = 'none';
   applyCurrentUser();
@@ -5062,11 +5180,7 @@ function logout() {
   clearCurrentUser();
   document.body.dataset.role = 'viewer';
   document.getElementById('login-overlay').style.display = 'flex';
-  // 如果有记住，填回去；否则清空
-  const rem = (() => { try { return JSON.parse(localStorage.getItem(REMEMBER_KEY)); } catch(e) { return null; } })();
-  document.getElementById('login-username').value = rem ? rem.name : '';
-  document.getElementById('login-password').value = rem ? rem.pwd  : '';
-  document.getElementById('login-remember').checked = !!rem;
+  document.getElementById('login-username').value = '';
   document.getElementById('login-error').textContent = '';
 }
 
@@ -5188,7 +5302,7 @@ document.getElementById('login-password').addEventListener('keydown', e => {
   if (e.key === 'Enter') doLogin();
 });
 document.getElementById('login-username').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('login-password').focus();
+  if (e.key === 'Enter') doLogin();
 });
 
 // ── 可搜索下拉 ──
@@ -5329,13 +5443,6 @@ new MutationObserver(() => {
 })();
 migrateRolesToMember();
 document.body.dataset.role = 'viewer';
-// 自动填入记住的账号密码
-const _rem = (() => { try { return JSON.parse(localStorage.getItem(REMEMBER_KEY)); } catch(e) { return null; } })();
-if (_rem) {
-  document.getElementById('login-username').value = _rem.name;
-  document.getElementById('login-password').value = _rem.pwd;
-  document.getElementById('login-remember').checked = true;
-}
 const _savedUser = getCurrentUser();
 if (_savedUser) {
   document.getElementById('login-overlay').style.display = 'none';
