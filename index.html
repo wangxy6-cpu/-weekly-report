@@ -707,9 +707,8 @@
   .modal-select.s-stalled   { background-color: #fee2e2; color: #991b1b; border-color: #fca5a5; }
   .modal-select.s-other     { background-color: #f3f4f6; color: #374151; border-color: var(--border); }
 
-  /* ── 发送周报按钮（登录后可见，未登录隐藏）── */
-  body[data-role="viewer"] #btn-send-report,
-  body:not([data-role]) #btn-send-report { display: none !important; }
+  /* ── 发送周报按钮（仅 admin 可见）── */
+  body:not([data-role="admin"]) #btn-send-report { display: none !important; }
   #btn-send-report {
     display: flex; align-items: center; gap: 5px;
     padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer;
