@@ -3850,20 +3850,6 @@ const ALL_DATA = [
   {
     "studio": "用增需求",
     "game": "用增-国内",
-    "task": "[任务卡]【海外充值平台】-订单管理or数数增加邮箱导出-2026年3月18日",
-    "link": "https://my.feishu.cn/wiki/XS3hwbdXni7EvIkfYHAcDBc9njh",
-    "submitter": "张世鑫",
-    "avatar": "",
-    "status": "已上线",
-    "update": "2026.04.13已上线",
-    "updateDate": "2026.04.14",
-    "expect": "2026.04.01",
-    "eta": "2026.04.13",
-    "anomaly": "无"
-  },
-  {
-    "studio": "用增需求",
-    "game": "用增-国内",
     "task": "[任务卡]【充值平台（国内）】-v4.1.8版本（新增限时累充返利活动）-20260205",
     "link": "https://leiting.feishu.cn/docx/U2e7dFrMLolPDVxOu8ScvH3inAe",
     "submitter": "李逸欢",
@@ -4158,6 +4144,34 @@ const ALL_DATA = [
   {
     "studio": "用增需求",
     "game": "用增-海外",
+    "task": "[任务卡]【海外充值平台】-优惠券上架后支持修改适用支付渠道-20260415",
+    "link": "https://leiting.feishu.cn/docx/C59Vdjy70ouIq3xeeW6csKQ7nsh",
+    "submitter": "李逸欢",
+    "avatar": "",
+    "status": "已上线",
+    "update": "2026.04.13已上线",
+    "updateDate": "2026.04.15",
+    "expect": "2026.04.01",
+    "eta": "2026.04.15",
+    "anomaly": "无"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-海外",
+    "task": "[任务卡]【海外充值平台】-订单管理or数数增加邮箱导出-2026年3月18日",
+    "link": "https://my.feishu.cn/wiki/XS3hwbdXni7EvIkfYHAcDBc9njh",
+    "submitter": "张世鑫",
+    "avatar": "",
+    "status": "已上线",
+    "update": "2026.04.13已上线",
+    "updateDate": "2026.04.14",
+    "expect": "2026.04.01",
+    "eta": "2026.04.13",
+    "anomaly": "无"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-海外",
     "task": "[任务卡]【海外积分商城】-V1.0产品需求-20260120",
     "link": "https://leiting.feishu.cn/docx/F9JbdcofdowXhnxjl0uc9rdknxd",
     "submitter": "李逸欢",
@@ -4356,7 +4370,7 @@ function renderOnlineSection() {
   // 个人工作台模式：只展示当前登录用户的数据
   if (isMyWorkspaceActive) {
     const cur = getCurrentUser();
-    const myName = cur ? (cur.display || cur.name) : '';
+    const myName = cur ? cur.name : '';
     outdated = outdated.filter(r => r.submitter === myName);
   }
   const sec = document.getElementById("online-section");
@@ -4639,20 +4653,27 @@ function renderSummary() {
   const body = document.getElementById("summary-body");
   let totalShown = 0;
 
-  // 按当前侧边栏/筛选选中的工作室-游戏 + 当周 updateDate 过滤
-  const { studio, game } = getFilters();
+  // 按当前侧边栏/筛选选中的工作室-游戏-提单人 + 当周 updateDate 过滤
+  const { studio, game, submitter } = getFilters();
   let scopeData = ALL_DATA.filter(r => isCurrentWeek(r.updateDate));
-  if (studio) scopeData = scopeData.filter(r => r.studio === studio);
-  if (game)   scopeData = scopeData.filter(r => r.game   === game);
+  if (studio)    scopeData = scopeData.filter(r => r.studio    === studio);
+  if (game)      scopeData = scopeData.filter(r => r.game      === game);
+  if (submitter) scopeData = scopeData.filter(r => r.submitter === submitter);
 
-  // 更新标题提示
+  // 更新标题提示（个人工作台时显示用户名，否则显示工作室/游戏范围）
   const titleEl = document.querySelector(".summary-header-title");
   const { start, end } = getCurrentWeekRange();
   const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
   const weekRange = `${fmt(start)}~${fmt(end)}`;
   if (titleEl) {
-    const scope = game ? game : studio ? studio : "全部工作室";
-    titleEl.textContent = `${scope} · 本周动态（${weekRange}）`;
+    if (isMyWorkspaceActive) {
+      const cur = getCurrentUser();
+      const displayName = cur ? (cur.display || cur.name) : submitter;
+      titleEl.textContent = `${displayName} · 个人工作台（${weekRange}）`;
+    } else {
+      const scope = game ? game : studio ? studio : "全部工作室";
+      titleEl.textContent = `${scope} · 本周动态（${weekRange}）`;
+    }
   }
 
   // 按工作室 → 游戏分组
@@ -4825,8 +4846,8 @@ function restoreFilterFrom(source) {
   document.getElementById("f-status").value    = source.status    || "";
 }
 
-// 激活个人工作台（传入姓名）
-function activateMyWorkspace(name) {
+// 激活个人工作台（filterName: 与数据 submitter 一致的账号名；displayName: 标题展示用）
+function activateMyWorkspace(filterName, displayName) {
   if (!isMyWorkspaceActive) {
     // 保存当前工作室筛选状态
     saveCurrentFilterTo(studioFilter);
@@ -4838,7 +4859,7 @@ function activateMyWorkspace(name) {
   // 个人工作台始终重置为默认筛选
   document.getElementById("f-studio").value    = "";
   document.getElementById("f-game").value      = "";
-  document.getElementById("f-submitter").value = name;
+  document.getElementById("f-submitter").value = filterName;
   document.getElementById("f-search").value    = "";
   document.getElementById("f-status").value    = "";
   refreshSearchSelects();
@@ -4846,13 +4867,7 @@ function activateMyWorkspace(name) {
   document.getElementById("btn-add").style.display = "none";
   document.getElementById("btn-import").style.display = "none";
   document.getElementById("filter-panel").style.display = "";
-  applyFilter();
-  const titleEl = document.querySelector(".summary-header-title");
-  if (titleEl) {
-    const { start, end } = getCurrentWeekRange();
-    const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
-    titleEl.textContent = `${name} · 个人工作台（${fmt(start)}~${fmt(end)}）`;
-  }
+  applyFilter(); // applyFilter → renderSummary 负责更新标题
 }
 
 // 退出个人工作台（恢复按钮 + 恢复工作室筛选）
@@ -4874,7 +4889,7 @@ function deactivateMyWorkspace() {
 document.getElementById("sidebar-my-btn").addEventListener("click", () => {
   const cur = getCurrentUser();
   if (!cur) { alert("请先登录"); return; }
-  activateMyWorkspace(cur.name);
+  activateMyWorkspace(cur.name, cur.display || cur.name);
 });
 
 // 侧边栏交互
@@ -5285,7 +5300,18 @@ function doLogin() {
   const pwd  = pwdVisible ? document.getElementById('login-password').value : '123456';
   const err  = document.getElementById('login-error');
   if (!name) { err.textContent = '请填写账号'; return; }
-  let user = getUsers().find(u => u.name === name && u.password === pwd);
+  // 支持完整账号名（如"兔力-陈勉"）或仅姓名部分（如"陈勉"）匹配
+  function nameMatch(u) {
+    if (u.name === name) return true;
+    if (u.display && u.display === name) return true;
+    // 兼容"工作室-姓名"格式，允许只输入"-"后的姓名
+    if (u.name.includes('-')) {
+      const shortName = u.name.split('-').slice(1).join('-');
+      if (shortName === name) return true;
+    }
+    return false;
+  }
+  let user = getUsers().find(u => nameMatch(u) && u.password === pwd);
   // 如果默认密码失败且密码框隐藏，说明该账号密码非默认，显示密码框让用户输入
   if (!user && !pwdVisible) {
     pwdField.style.display = '';
@@ -5369,7 +5395,7 @@ function applyCurrentUser() {
   document.getElementById('dropdown-settings').style.display = isAdmin ? '' : 'none';
   // 登录后默认进入个人工作台
   isMyWorkspaceActive = false; // 重置状态，确保保存逻辑正确
-  activateMyWorkspace(u.display || u.name);
+  activateMyWorkspace(u.name, u.display || u.name);
 }
 
 // ── 系统设置面板 ──
