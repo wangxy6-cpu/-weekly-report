@@ -396,7 +396,8 @@
     font-size: 13px; font-weight: 600; color: #374151;
     border-left: 3px solid #818cf8; background: #f0f2ff; border-radius: 4px;
   }
-  /* 本周进展列字色加深 */
+  /* 表格字色统一为黑色 */
+  .task-table td, .task-table th { color: var(--text-primary); }
   .task-table .col-update { color: var(--text-primary); }
   /* 个人工作台快捷按钮区 */
   .my-action-bar { display: none; gap: 10px; margin-bottom: 16px; }
@@ -463,7 +464,7 @@
   .task-table { width: 100%; min-width: 1100px; border-collapse: collapse; font-size: 12.5px; table-layout: fixed; }
   .task-table th {
     background: #f4f6fb; font-size: 11px; font-weight: 600;
-    color: var(--text-muted); padding: 7px 8px; text-align: left;
+    color: var(--text-primary); padding: 7px 8px; text-align: left;
     border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden;
   }
   .task-table td {
@@ -1522,6 +1523,20 @@ const ALL_DATA = [
   {
     "studio": "摘星工作室",
     "game": "问道手游",
+    "task": "[任务卡]【问道手游】-极光推送消息优化-20260405",
+    "link": "https://leiting.feishu.cn/docx/Pnf4dzEPNoOFWpxMotqczXDjnud",
+    "submitter": "郑少鹏",
+    "avatar": "",
+    "status": "进行中",
+    "update": "1、开发已完成；\n2、测试待排期",
+    "updateDate": "2026.04.16",
+    "expect": "2026.04.30",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "问道手游",
     "task": "[任务卡]【问道手游】-不等价查证工具需求-20251230",
     "link": "https://leiting.feishu.cn/docx/ZgYXdhpMdowvwwxoQscctO1cnOG",
     "submitter": "李文政",
@@ -1601,20 +1616,6 @@ const ALL_DATA = [
     "updateDate": "2026.03.18",
     "expect": "2026.04.20",
     "eta": "2026.04.20",
-    "anomaly": "无"
-  },
-  {
-    "studio": "摘星工作室",
-    "game": "问道手游",
-    "task": "[任务卡]【问道手游】-极光推送消息优化-20260405",
-    "link": "https://leiting.feishu.cn/docx/Pnf4dzEPNoOFWpxMotqczXDjnud",
-    "submitter": "郑少鹏",
-    "avatar": "",
-    "status": "已排期",
-    "update": "1、客户端已排期，工期：2026.04.14~2026.04.15；\n2、服务端已排期，工期：2026.04.15~2026.04.15；\n3、测试待排期",
-    "updateDate": "2026.04.14",
-    "expect": "2026.04.30",
-    "eta": "暂未排期",
     "anomaly": "无"
   },
   {
@@ -2101,10 +2102,10 @@ const ALL_DATA = [
     "submitter": "王俊杰",
     "avatar": "",
     "status": "已排期",
-    "update": "",
-    "updateDate": "",
-    "expect": "",
-    "eta": "",
+    "update": "1、服务端已排期，工期：2026.04.22~2026.04.22；\n2、测试待排期",
+    "updateDate": "2026.04.16",
+    "expect": "2026.04.17",
+    "eta": "暂未排期",
     "anomaly": "无"
   },
   {
@@ -2432,6 +2433,34 @@ const ALL_DATA = [
   {
     "studio": "INJOY工作室",
     "game": "杖剑传说（海外）",
+    "task": "[任务卡]【杖剑传说（欧美）】压测任务单-杖剑欧美压测事项-20260410",
+    "link": "https://leiting.feishu.cn/docx/ISxBdDP1hotQwBxSsVmcodDFn7g",
+    "submitter": "蔡宸浩",
+    "avatar": "",
+    "status": "进行中",
+    "update": "1、任务1：公测压测：工期：2026.04.14~2026.04.28；\n2、任务2：自动开服压测：工期：2026.04.28~2026.04.30；",
+    "updateDate": "2026.03.31",
+    "expect": "2026.04.30",
+    "eta": "2026.04.30",
+    "anomaly": "无"
+  },
+  {
+    "studio": "INJOY工作室",
+    "game": "杖剑传说（海外）",
+    "task": "[任务卡]【杖剑传说（欧美）】-自助查询接入-20260311",
+    "link": "https://leiting.feishu.cn/docx/Hst0d0xS5oD7zax6LB1chdcwnBg",
+    "submitter": "林志伟",
+    "avatar": "",
+    "status": "进行中",
+    "update": "1、开发已完成，需求方验收中",
+    "updateDate": "2026.04.16",
+    "expect": "2026.03.31",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "INJOY工作室",
+    "game": "杖剑传说（海外）",
     "task": "【测试用例】《杖剑传说-日本ios》接入JoyBoxSDK（非首次接入）-20260323",
     "link": "https://leiting.feishu.cn/wiki/OyaXwZL2BiRNVTkMyrmczDpLnHc",
     "submitter": "郑少鹏",
@@ -2455,6 +2484,20 @@ const ALL_DATA = [
     "updateDate": "2026.03.19",
     "expect": "2026.03.13",
     "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "INJOY工作室",
+    "game": "杖剑传说（海外）",
+    "task": "[任务卡]【测试用例】-《杖剑传说（欧美）双端》升级JoyBoxSDK&充值防御测试（非首次接入）-20260405",
+    "link": "https://leiting.feishu.cn/docx/GFcHd4o2oogX5ZxjQyjcPcunnCh",
+    "submitter": "郑少鹏",
+    "avatar": "",
+    "status": "已排期",
+    "update": "",
+    "updateDate": "",
+    "expect": "",
+    "eta": "",
     "anomaly": "无"
   },
   {
@@ -2580,6 +2623,20 @@ const ALL_DATA = [
     "update": "待上线，发版时间待定",
     "updateDate": "2026.03.05",
     "expect": "2025.12.31",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（外部需求）",
+    "task": "[任务卡]【海外客服工具】-海外七鱼漫游拉取功能优化-20251216",
+    "link": "https://leiting.feishu.cn/docx/AUJRdwQEfoYSi6xRibwcpdp3nhh",
+    "submitter": "吴聪",
+    "avatar": "",
+    "status": "进行中",
+    "update": "1、开发完成",
+    "updateDate": "2026.04.16",
+    "expect": "2026.04.15",
     "eta": "暂未排期",
     "anomaly": "无"
   },
@@ -3104,20 +3161,6 @@ const ALL_DATA = [
   {
     "studio": "技术中台基建类需求",
     "game": "技术基建-国内（外部需求）",
-    "task": "[任务卡]【海外客服工具】-海外七鱼漫游拉取功能优化-20251216",
-    "link": "https://leiting.feishu.cn/docx/AUJRdwQEfoYSi6xRibwcpdp3nhh",
-    "submitter": "吴聪",
-    "avatar": "",
-    "status": "已排期",
-    "update": "1、客户端已排期，工期：2026.04.15~2026.04.15；",
-    "updateDate": "2026.04.14",
-    "expect": "2026.04.15",
-    "eta": "2026.04.15",
-    "anomaly": "无"
-  },
-  {
-    "studio": "技术中台基建类需求",
-    "game": "技术基建-国内（外部需求）",
     "task": "[任务卡]【JoyboxSDK】-【二期】新增俄罗斯地区判定方法+封装pay方法的三方支付跳转逻辑（谷歌API升级回退+单独处理getPaymentWay）-20260408",
     "link": "https://leiting.feishu.cn/docx/TWa1diCL7ow1EXxpoFXcWqt1njh",
     "submitter": "林志伟",
@@ -3266,6 +3309,34 @@ const ALL_DATA = [
     "update": "客户端开发完成，待发布至正式环境后，由@郑少鹏分包交付数据中心验收",
     "updateDate": "2026.04.09",
     "expect": "2026.01.30",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【压测平台】-采集被测服务监控需求-20260203",
+    "link": "https://leiting.feishu.cn/docx/TnardATBho4DS0xjc7icaJgDnPg",
+    "submitter": "刘燕",
+    "avatar": "",
+    "status": "进行中",
+    "update": "1、持续进行中，每周确认一下实际进度",
+    "updateDate": "2026.04.16",
+    "expect": "2026.03.31",
+    "eta": "2026.04.30",
+    "anomaly": "无"
+  },
+  {
+    "studio": "技术中台基建类需求",
+    "game": "技术基建-国内（內部需求）",
+    "task": "[任务卡]【JoyboxSDK】-AF&Firebase上报广告事件字段删减-20251205",
+    "link": "https://leiting.feishu.cn/docx/QUkedug6no1RdtxitjmcR929nOQ",
+    "submitter": "兔力-陈勉",
+    "avatar": "",
+    "status": "进行中",
+    "update": "1、客户端开发中，预计4月17日开发完成；\n2、测试待排期",
+    "updateDate": "2026.04.16",
+    "expect": "2026.01.15",
     "eta": "暂未排期",
     "anomaly": "无"
   },
@@ -4218,6 +4289,20 @@ const ALL_DATA = [
     "update": "1、客户端开发已完成；\n2、测试待排期",
     "updateDate": "2026.03.03",
     "expect": "2026.02.02",
+    "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "用增需求",
+    "game": "用增-国内",
+    "task": "[任务卡]【国内充值平台】-V4.1.9版本-充值平台新增秒杀礼包功能-20260325",
+    "link": "https://leiting.feishu.cn/docx/RrIXd0tReoF6SUx8pbecgOzxn5c",
+    "submitter": "李逸欢",
+    "avatar": "",
+    "status": "已排期",
+    "update": "1、[任务卡]【充值平台（国内）】-V4.1.5-增加三方支付平台推送预警-20260123 合并一起处理；\n2、运营支撑组前端已排期，工期：2026.04.21~2026.04.30；\n3、运营支撑组服务端已排期，工期：2026.04.24~2026.04.30；\n4、测试待排期",
+    "updateDate": "2026.04.16",
+    "expect": "2026.04.15",
     "eta": "暂未排期",
     "anomaly": "无"
   },
