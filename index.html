@@ -212,14 +212,14 @@
     padding: 12px 16px 6px; font-weight: 600;
   }
   .sidebar-home-btn {
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 16px 12px; cursor: pointer; color: rgba(255,255,255,.5);
-    font-size: 12px; border: none; background: none; width: 100%;
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 16px 13px; cursor: pointer; color: rgba(255,255,255,.65);
+    font-size: 13px; font-weight: 500; border: none; background: none; width: 100%;
     transition: color .15s;
   }
   .sidebar-home-btn:hover { color: rgba(255,255,255,.9); }
   .sidebar-home-btn.active { color: #fff; }
-  .sidebar-home-btn svg { flex-shrink: 0; }
+  .sidebar-home-btn svg { flex-shrink: 0; opacity: .85; }
   /* Studio row */
   .nav-studio {
     display: flex; align-items: center; gap: 9px;
@@ -385,17 +385,58 @@
   .my-studio-section { margin-bottom: 24px; }
   .my-studio-header {
     display: flex; align-items: center; gap: 8px;
-    padding: 8px 14px; margin-bottom: 10px;
+    padding: 9px 14px; margin-bottom: 12px;
     background: linear-gradient(90deg,#e8eeff,#f0f4ff);
-    border-left: 3px solid var(--primary); border-radius: 6px;
-    font-size: 13px; font-weight: 700; color: var(--primary);
+    border-left: 4px solid var(--primary); border-radius: 6px;
+    font-size: 15px; font-weight: 700; color: var(--primary);
   }
-  .my-game-section { margin-bottom: 14px; }
+  .my-game-section { margin-bottom: 16px; }
   .my-game-header {
-    padding: 5px 14px; margin-bottom: 6px;
-    font-size: 12px; font-weight: 600; color: var(--text-secondary);
-    border-left: 2px solid #c7d2fe; background: #f8f9ff; border-radius: 4px;
+    padding: 6px 14px; margin-bottom: 6px;
+    font-size: 13px; font-weight: 600; color: #374151;
+    border-left: 3px solid #818cf8; background: #f0f2ff; border-radius: 4px;
   }
+  /* 本周进展列字色加深 */
+  .task-table .col-update { color: var(--text-primary); }
+  /* 个人工作台快捷按钮区 */
+  .my-action-bar { display: none; gap: 10px; margin-bottom: 16px; }
+  .my-action-bar.visible { display: flex; }
+  .my-action-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 11px 16px; border-radius: 8px; border: 1.5px solid var(--border);
+    background: var(--card); cursor: pointer; font-size: 13px; font-weight: 600;
+    color: var(--text-primary); transition: all .15s;
+  }
+  .my-action-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .my-action-btn.btn-online:hover { border-color: #059669; color: #059669; background: #ecfdf5; }
+  .my-btn-count {
+    font-size: 11px; padding: 1px 8px; border-radius: 20px;
+    background: #e0e7ff; color: var(--primary); font-weight: 500;
+  }
+  .my-action-btn.btn-online .my-btn-count { background: #d1fae5; color: #059669; }
+  /* 个人工作台弹框 */
+  .my-modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    z-index: 2000; align-items: flex-start; justify-content: center; padding-top: 64px;
+  }
+  .my-modal-overlay.open { display: flex; }
+  .my-modal-box {
+    background: var(--card); border-radius: 14px; width: 92%; max-width: 980px;
+    max-height: 80vh; display: flex; flex-direction: column;
+    box-shadow: 0 10px 48px rgba(0,0,0,.2);
+  }
+  .my-modal-hd {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 15px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .my-modal-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .my-modal-close {
+    width: 28px; height: 28px; border-radius: 6px; border: none; background: none;
+    cursor: pointer; font-size: 16px; color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .my-modal-close:hover { background: var(--bg); color: var(--text-primary); }
+  .my-modal-body { padding: 16px 20px; overflow-y: auto; }
 
   /* ── Person Section ── */
   .person-section { margin-bottom: 16px; }
@@ -815,14 +856,14 @@
   <!-- 左侧导航 -->
   <nav class="sidebar">
     <button class="sidebar-home-btn" id="sidebar-home-btn" title="全部工作室本周动态">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
         <path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
       </svg>
       全部工作室·本周动态
     </button>
     <button class="sidebar-home-btn" id="sidebar-my-btn" title="个人工作台">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
         <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
@@ -1087,12 +1128,26 @@
       </div>
     </div>
 
+    <!-- 个人工作台快捷按钮（仅 isMyWorkspaceActive 时显示） -->
+    <div class="my-action-bar" id="my-action-bar">
+      <button class="my-action-btn" id="btn-my-week" onclick="openMyWeekModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        本周动态
+        <span class="my-btn-count" id="btn-week-count">0 条</span>
+      </button>
+      <button class="my-action-btn btn-online" id="btn-my-history" onclick="openMyHistoryOnlineModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        历史已上线
+        <span class="my-btn-count" id="btn-history-count">0 条</span>
+      </button>
+    </div>
+
     <!-- 已上线汇总区 -->
     <div class="online-section" id="online-section" style="display:none">
       <div class="online-section-header" id="online-section-toggle">
         <div class="online-section-header-left">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="color:#059669"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span class="online-section-title">已上线</span>
+          <span class="online-section-title">历史已上线</span>
           <span class="online-section-count" id="online-section-count">0 条</span>
         </div>
         <span class="online-section-toggle">
@@ -1302,6 +1357,17 @@
       <button class="btn-cancel" onclick="closeChangePwd()">取消</button>
       <button class="btn-save" onclick="doChangePwd()">确认修改</button>
     </div>
+  </div>
+</div>
+
+<!-- ── 个人工作台弹框 ── -->
+<div class="my-modal-overlay" id="my-modal-overlay" onclick="if(event.target===this)closeMyModal()">
+  <div class="my-modal-box">
+    <div class="my-modal-hd">
+      <span class="my-modal-title" id="my-modal-title"></span>
+      <button class="my-modal-close" onclick="closeMyModal()">✕</button>
+    </div>
+    <div class="my-modal-body" id="my-modal-body"></div>
   </div>
 </div>
 
@@ -2025,6 +2091,20 @@ const ALL_DATA = [
     "updateDate": "2026.04.14",
     "expect": "2026.03.20",
     "eta": "暂未排期",
+    "anomaly": "无"
+  },
+  {
+    "studio": "摘星工作室",
+    "game": "道友来挖宝",
+    "task": "[任务卡]【道友来挖宝】-禁言接口增加按频道区分-20260330",
+    "link": "https://leiting.feishu.cn/docx/CdSddLnCqoyCjdxD2W3cBcYcnoY",
+    "submitter": "王俊杰",
+    "avatar": "",
+    "status": "已排期",
+    "update": "",
+    "updateDate": "",
+    "expect": "",
+    "eta": "",
     "anomaly": "无"
   },
   {
@@ -4366,14 +4446,10 @@ function isOnlineOutdated(r) {
 
 // 渲染已上线汇总区（不受筛选条件影响，显示所有超期已上线记录）
 function renderOnlineSection() {
-  let outdated = ALL_DATA.filter(r => isOnlineOutdated(r));
-  // 个人工作台模式：只展示当前登录用户的数据
-  if (isMyWorkspaceActive) {
-    const cur = getCurrentUser();
-    const myName = cur ? cur.name : '';
-    outdated = outdated.filter(r => r.submitter === myName);
-  }
   const sec = document.getElementById("online-section");
+  // 个人工作台模式：历史已上线通过弹框展示，inline 区隐藏
+  if (isMyWorkspaceActive) { sec.style.display = "none"; return; }
+  let outdated = ALL_DATA.filter(r => isOnlineOutdated(r));
   if (!outdated.length) { sec.style.display = "none"; return; }
   sec.style.display = "";
   document.getElementById("online-section-count").textContent = outdated.length + " 条";
@@ -4863,11 +4939,15 @@ function activateMyWorkspace(filterName, displayName) {
   document.getElementById("f-search").value    = "";
   document.getElementById("f-status").value    = "";
   refreshSearchSelects();
-  // 个人工作台：隐藏新增记录和批量导入按钮
+  // 个人工作台：隐藏新增记录和批量导入按钮，隐藏 inline 面板，显示快捷按钮
   document.getElementById("btn-add").style.display = "none";
   document.getElementById("btn-import").style.display = "none";
   document.getElementById("filter-panel").style.display = "";
+  document.getElementById("week-summary").style.display = "none";
+  document.getElementById("online-section").style.display = "none";
+  document.getElementById("my-action-bar").classList.add("visible");
   applyFilter(); // applyFilter → renderSummary 负责更新标题
+  updateMyActionBarCounts();
 }
 
 // 退出个人工作台（恢复按钮 + 恢复工作室筛选）
@@ -4878,6 +4958,9 @@ function deactivateMyWorkspace() {
   isMyWorkspaceActive = false;
   document.getElementById("btn-add").style.display = "";
   document.getElementById("btn-import").style.display = "";
+  document.getElementById("week-summary").style.display = "";
+  document.getElementById("my-action-bar").classList.remove("visible");
+  closeMyModal();
   // 恢复工作室筛选状态，提单人始终清空
   restoreFilterFrom(studioFilter);
   document.getElementById("f-submitter").value = "";
@@ -5191,6 +5274,109 @@ document.getElementById("summary-toggle").addEventListener("click", () => {
   const tog = document.querySelector(".summary-toggle");
   tog.firstChild.textContent = document.getElementById("week-summary").classList.contains("collapsed") ? "展开" : "收起";
 });
+
+// ── 个人工作台弹框 ──
+function closeMyModal() {
+  document.getElementById('my-modal-overlay').classList.remove('open');
+}
+
+function updateMyActionBarCounts() {
+  if (!isMyWorkspaceActive) return;
+  const cur = getCurrentUser();
+  const submitter = cur ? cur.name : '';
+  const weekCount    = ALL_DATA.filter(r => isCurrentWeek(r.updateDate) && r.submitter === submitter).length;
+  const historyCount = ALL_DATA.filter(r => r.submitter === submitter && r.status === '已上线').length;
+  document.getElementById('btn-week-count').textContent    = weekCount    + ' 条';
+  document.getElementById('btn-history-count').textContent = historyCount + ' 条';
+}
+
+function openMyWeekModal() {
+  const cur = getCurrentUser();
+  const submitter = cur ? cur.name : '';
+  const displayName = cur ? (cur.display || cur.name) : submitter;
+  const { start, end } = getCurrentWeekRange();
+  const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
+  const scopeData = ALL_DATA.filter(r => isCurrentWeek(r.updateDate) && r.submitter === submitter);
+
+  document.getElementById('my-modal-title').textContent =
+    `${displayName} · 本周动态（${fmt(start)}~${fmt(end)}）· ${scopeData.length} 条`;
+
+  const body = document.getElementById('my-modal-body');
+  if (!scopeData.length) {
+    body.innerHTML = '<div class="empty" style="padding:48px 0;text-align:center">本周暂无动态</div>';
+  } else {
+    const studioMap = {};
+    scopeData.forEach(r => {
+      const s = r.studio || '（未分类）';
+      const g = r.game   || '（未分类）';
+      if (!studioMap[s]) studioMap[s] = {};
+      if (!studioMap[s][g]) studioMap[s][g] = [];
+      studioMap[s][g].push(r);
+    });
+    body.innerHTML = Object.entries(studioMap).map(([s, gameMap]) => `
+      <div style="margin-bottom:20px">
+        <div style="font-size:14px;font-weight:700;color:var(--primary);padding:7px 12px;background:linear-gradient(90deg,#e8eeff,#f0f4ff);border-left:4px solid var(--primary);border-radius:6px;margin-bottom:10px">${s}</div>
+        ${Object.entries(gameMap).map(([g, items]) => `
+          <div style="margin-bottom:12px">
+            <div style="font-size:13px;font-weight:600;color:#374151;padding:5px 12px;background:#f0f2ff;border-left:3px solid #818cf8;border-radius:4px;margin-bottom:8px">${g}</div>
+            ${SUMMARY_STATUS_ORDER.map(sg => {
+              const group = items.filter(r => sg.statuses.includes(r.status));
+              if (!group.length) return '';
+              return `<div style="padding:0 12px 8px">
+                <div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+                  <span style="width:8px;height:8px;border-radius:50%;background:${sg.dot};display:inline-block;flex-shrink:0"></span>
+                  <span style="font-size:12px;font-weight:600;color:var(--text-secondary)">${sg.label}</span>
+                  <span style="font-size:11px;background:#f3f4f6;color:var(--text-muted);padding:1px 7px;border-radius:20px">${group.length} 条</span>
+                </div>
+                <table class="summary-table" style="width:100%">${group.map(item => {
+                  const t = item.task.length > 52 ? item.task.slice(0,52)+'...' : item.task;
+                  const td = item.link ? `<a href="${item.link}" target="_blank" class="task-link" title="${item.task}">${t}</a>` : `<span title="${item.task}">${t}</span>`;
+                  const upd = (item.update||'—').replace(/\n/g,' ').trim();
+                  return `<tr><td class="s-col-task">${td}</td><td class="s-col-status"><span class="badge ${STATUS_MAP[item.status]?.[0]||'status-other'}">${item.status||'—'}</span></td><td class="s-col-update"><span class="s-update-text">${upd}</span></td></tr>`;
+                }).join('')}</table>
+              </div>`;
+            }).join('')}
+          </div>`).join('')}
+      </div>`).join('');
+  }
+  document.getElementById('my-modal-overlay').classList.add('open');
+}
+
+function openMyHistoryOnlineModal() {
+  const cur = getCurrentUser();
+  const submitter = cur ? cur.name : '';
+  const displayName = cur ? (cur.display || cur.name) : submitter;
+  const dateVal = d => { if(!d)return 0; const m=d.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/); return m?+m[1]*10000+ +m[2]*100+ +m[3]:0; };
+  const data = [...ALL_DATA.filter(r => r.submitter === submitter && r.status === '已上线')]
+    .sort((a,b) => dateVal(b.updateDate) - dateVal(a.updateDate));
+
+  document.getElementById('my-modal-title').textContent = `${displayName} · 历史已上线 · ${data.length} 条`;
+
+  const body = document.getElementById('my-modal-body');
+  if (!data.length) {
+    body.innerHTML = '<div class="empty" style="padding:48px 0;text-align:center">暂无已上线记录</div>';
+  } else {
+    body.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="background:var(--bg)">
+        <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);width:14%">工作室</th>
+        <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);width:17%">游戏/项目</th>
+        <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary)">任务卡</th>
+        <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);width:10%">上线日期</th>
+      </tr></thead>
+      <tbody>${data.map((r,i) => {
+        const t = r.task.length > 58 ? r.task.slice(0,58)+'...' : r.task;
+        const td = r.link ? `<a href="${r.link}" target="_blank" style="color:var(--primary);text-decoration:none" title="${r.task}">${t}</a>` : `<span title="${r.task}">${t}</span>`;
+        return `<tr style="${i%2===1?'background:var(--bg)':''}">
+          <td style="padding:8px 12px;color:var(--text-secondary)">${r.studio||'—'}</td>
+          <td style="padding:8px 12px;color:var(--text-primary)">${r.game||'—'}</td>
+          <td style="padding:8px 12px">${td}</td>
+          <td style="padding:8px 12px;color:var(--text-muted);white-space:nowrap">${r.updateDate||'—'}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
+  document.getElementById('my-modal-overlay').classList.add('open');
+}
 
 // ── 已上线区折叠 ──
 document.getElementById("online-section-toggle").addEventListener("click", () => {
