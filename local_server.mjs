@@ -92,7 +92,25 @@ const SUBMITTER_OPEN_IDS = {
   '钱智强':        'ou_ecd889d2d7e98155c74f5fc73c7ac35a',
   '高志威':        'ou_7aa5f6615e915626e9cad0896be8a5d7',
   '魏于博':        'ou_f55e40284e1a92f3f89a154cd9ea758a',
+  '杜婕':          'ou_ee3c15df2f1d85ebeefd439583b39826',
+  '91-肖文琛':     'ou_5899601af13545e058d4f2ba0962dd33',
+  '肖长发':        'ou_c148780dc04532cc58625c4efb148990',
+  'Arik-曾富龙':   'ou_d1ef0492b8ae2cdc2bbbe514b826a15e',
+  '刘燕':          'ou_abbdb0c6fdede4061707a1f09f502af7',
+  '吴聪':          'ou_2e5373fa4f8d91f2d98833ca279a4b33',
+  '庞正夫':        'ou_58fdb644c1183577eb1d8ef0e6bbd8f4',
+  '戚芳媛':        'ou_c715f5b9f80dede7dc9e07d14a8b3d63',
 };
+
+// 查找提单人 open_id：先精确匹配，再尝试 "-" 后短名兜底
+function getSubmitterOpenId(submitter) {
+  if (SUBMITTER_OPEN_IDS[submitter]) return SUBMITTER_OPEN_IDS[submitter];
+  if (submitter.includes('-')) {
+    const shortName = submitter.split('-').slice(1).join('-');
+    if (SUBMITTER_OPEN_IDS[shortName]) return SUBMITTER_OPEN_IDS[shortName];
+  }
+  return null;
+}
 
 // 状态配置（顺序即排序优先级）
 const STATUS_CATS = [
@@ -125,10 +143,11 @@ function buildCard(studioName, items, weekRange, today) {
     .map(c => `${c.icon} ${c.label} ${catCounts[c.label]}条`)
     .join('    ');
 
-  // 按提单人 → 游戏 分组
+  // 按提单人 → 游戏 分组（过滤掉表头误入行）
   const submitterMap = {};
   items.forEach(r => {
     const sub = r.submitter || '未知';
+    if (sub === '提单人') return;   // 跳过表头误入数据
     if (!submitterMap[sub]) submitterMap[sub] = {};
     const game = r.game || '（未分类）';
     if (!submitterMap[sub][game]) submitterMap[sub][game] = [];
@@ -155,7 +174,7 @@ function buildCard(studioName, items, weekRange, today) {
   for (let i = 0; i < submitters.length; i++) {
     const [submitter, gameMap] = submitters[i];
     if (i > 0) elements.push({ tag: 'hr' });
-    const openId = SUBMITTER_OPEN_IDS[submitter];
+    const openId = getSubmitterOpenId(submitter);
     const mentionText = openId
       ? `<at id="${openId}"></at>`
       : `@${submitter}`;
