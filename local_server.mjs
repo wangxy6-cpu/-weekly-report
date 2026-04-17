@@ -31,6 +31,12 @@ const STUDIO_GROUPS = {
   '三重奏工作室': [
     { name: '【三重奏工作室】外部需求进度同步群（每周五更新）', chatId: 'oc_eee01fa98f25aa732d44b8b601f866ae' },
   ],
+  '技术中台基建类需求': [
+    { name: '【中台基建】外部需求进度同步群（每周五更新）', chatId: 'oc_f87631bc9fec63af453c4b4673baf2d5' },
+  ],
+  '用增需求': [
+    { name: '【用户增长部】外部需求进度同步群（每周五更新）', chatId: 'oc_a6004fa9594efdf46d29a798b9126933' },
+  ],
 };
 
 // 提单人姓名 → open_id 映射
@@ -70,6 +76,22 @@ const SUBMITTER_OPEN_IDS = {
   '周明哲':        'ou_9bf72dbf13c496f3542624de1f348c84',
   '侯钦瀚':        'ou_31847658aba087cd1cf82a8e1a991432',
   '王哲':          'ou_e7f24b9ed07ad6d9082e0c0ec47a130c',
+  '冯晓阳':        'ou_413d4fe9b253fa2621f802982da25c8e',
+  '卓超':          'ou_9143b6f91c389c782db7859d60c4afc1',
+  '张世鑫':        'ou_ad6c1d06615023b1c8d3d4222276c034',
+  '彭鑫尧':        'ou_cd4da786b0ff0aab4842e9a881a1086a',
+  '徐梓健':        'ou_7c228490ee7023be170d50e4fe27443f',
+  '方涛':          'ou_e42f20043933ccc1aa0e35389e6d876b',
+  '林丽娟':        'ou_09d90a230a8caf2e646241c326cafb14',
+  '汪博':          'ou_b0a789ad8575a8e17e5c21653c812cfe',
+  '温敏怡':        'ou_a0620d2d2b576a3b4521301be2d19f01',
+  '王统军':        'ou_21d8676133579ceff0b22bbba205c518',
+  '邱单娜':        'ou_e91042efa1917c4bc27651103448cfe7',
+  '邹志鹏':        'ou_bb798ace5c5a2cd4b5dc6285776e4920',
+  '钟超平':        'ou_6f1f044103fafe29721868f74d0ca19f',
+  '钱智强':        'ou_ecd889d2d7e98155c74f5fc73c7ac35a',
+  '高志威':        'ou_7aa5f6615e915626e9cad0896be8a5d7',
+  '魏于博':        'ou_f55e40284e1a92f3f89a154cd9ea758a',
 };
 
 // 状态配置（顺序即排序优先级）

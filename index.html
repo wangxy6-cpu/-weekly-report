@@ -6050,8 +6050,15 @@ function getSrToday() {
   const d = new Date();
   return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
 }
+// 发送周报时排除的游戏（内部需求不对外同步）
+const SR_EXCLUDE_GAMES = ['技术基建-国内（內部需求）', '技术基建-海外（内部需求）'];
+
 function getStudioWeekItems(studioName) {
-  return ALL_DATA.filter(r => r.studio === studioName && isCurrentWeek(r.updateDate));
+  return ALL_DATA.filter(r =>
+    r.studio === studioName &&
+    isCurrentWeek(r.updateDate) &&
+    !SR_EXCLUDE_GAMES.includes(r.game)
+  );
 }
 function getStudiosWithData() {
   const studios = [...new Set(ALL_DATA.map(r => r.studio).filter(Boolean))];
