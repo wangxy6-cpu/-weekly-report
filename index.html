@@ -1138,15 +1138,15 @@
         本周动态
         <span class="my-btn-count" id="btn-week-count">0 条</span>
       </button>
-      <button class="my-action-btn btn-online" id="btn-my-history" onclick="openMyHistoryOnlineModal()">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        历史已上线
-        <span class="my-btn-count" id="btn-history-count">0 条</span>
-      </button>
       <button class="my-action-btn btn-pending" id="btn-my-pending" onclick="openMyAcceptedPendingModal()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/></svg>
         已接收待排期
         <span class="my-btn-count" id="btn-pending-count">0 条</span>
+      </button>
+      <button class="my-action-btn btn-online" id="btn-my-history" onclick="openMyHistoryOnlineModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        历史已上线
+        <span class="my-btn-count" id="btn-history-count">0 条</span>
       </button>
     </div>
 
@@ -5644,10 +5644,16 @@ function updateMyActionBarCounts() {
   const submitter = cur ? cur.name : '';
   const weekCount    = ALL_DATA.filter(r => isCurrentWeek(r.updateDate) && r.submitter === submitter).length;
   const historyCount = ALL_DATA.filter(r => r.submitter === submitter && r.status === '已上线').length;
-  const pendingCount = ALL_DATA.filter(r => r.submitter === submitter && (r.status === '已接收' || r.status === '待排期' || r.status === '暂未排期' || r.status === '已排期')).length;
   document.getElementById('btn-week-count').textContent    = weekCount    + ' 条';
   document.getElementById('btn-history-count').textContent = historyCount + ' 条';
-  document.getElementById('btn-pending-count').textContent = pendingCount + ' 条';
+  document.getElementById('btn-pending-count').textContent = '…';
+  fetchAcceptedFromSheet().then(rows => {
+    const cnt = rows.filter(r => r.submitter === submitter).length;
+    document.getElementById('btn-pending-count').textContent = cnt + ' 条';
+  }).catch(() => {
+    _acceptedCache = { ts: 0, rows: [] };
+    document.getElementById('btn-pending-count').textContent = '— 条';
+  });
 }
 
 function openMyWeekModal() {
@@ -5741,40 +5747,95 @@ function openMyHistoryOnlineModal() {
 // ── 已接收待排期弹框 ──
 const ACCEPTED_SHEET_TOKEN = 'CKN8swAnghxr8ktIXOXckTW0nid';
 const ACCEPTED_SHEET_ID    = 'iSkleQ';
+let _acceptedCache = { ts: 0, rows: [] };
 
-function openMyAcceptedPendingModal() {
+async function fetchAcceptedFromSheet() {
+  const now = Date.now();
+  if (_acceptedCache.rows.length && now - _acceptedCache.ts < 3 * 60 * 1000) return _acceptedCache.rows;
+
+  const SR_BASE = 'http://localhost:3891';
+  const rows = [];
+  let start = 3; // 跳过表头（第2行是列名）
+  let emptyChunks = 0;
+
+  while (start < 20000 && emptyChunks < 2) {
+    const end = Math.min(start + 199, 19999);
+    const resp = await fetch(`${SR_BASE}/api/sheet-read?token=${encodeURIComponent(ACCEPTED_SHEET_TOKEN)}&sheet=${encodeURIComponent(ACCEPTED_SHEET_ID)}&range=${encodeURIComponent('A' + start + ':I' + end)}`);
+    if (!resp.ok) break;
+    const json = await resp.json();
+    const vals = json?.data?.valueRange?.values || [];
+    if (!vals.length) break;
+
+    let nonEmpty = 0;
+    for (const r of vals) {
+      if (!r || !r[0]) continue;
+
+      // A列：任务卡（cell对象含 link + text）
+      const cellA = Array.isArray(r[0]) ? r[0][0] : r[0];
+      const link = (cellA?.link || '').split('?')[0].split('#')[0].trim();
+      const taskName = cellA?.text || link;
+      if (!link.startsWith('http')) continue;
+
+      // B列：提单人（@姓名 → 去掉@）
+      const submitterRaw = String(r[1] || '').trim();
+      const submitter = submitterRaw.startsWith('@') ? submitterRaw.slice(1) : submitterRaw;
+
+      // C列：实际进度，F列：期望完成时间
+      const progress = String(r[2] || '').trim();
+      const expected = String(r[5] || '').trim();
+
+      rows.push({ link, taskName, submitter, progress, expected });
+      nonEmpty++;
+    }
+    emptyChunks = nonEmpty === 0 ? emptyChunks + 1 : 0;
+    start = end + 1;
+  }
+
+  _acceptedCache = { ts: now, rows };
+  return rows;
+}
+
+async function openMyAcceptedPendingModal() {
   const cur = getCurrentUser();
   const submitter = cur ? cur.name : '';
   const displayName = cur ? (cur.display || cur.name) : submitter;
-  const pendingStatuses = new Set(['已接收', '待排期', '暂未排期', '已排期']);
-  const data = ALL_DATA.filter(r => r.submitter === submitter && pendingStatuses.has(r.status || ''));
-
-  document.getElementById('my-modal-title').textContent = `${displayName} · 已接收待排期 · ${data.length} 条`;
-
   const body = document.getElementById('my-modal-body');
-  if (!data.length) {
-    body.innerHTML = '<div class="empty" style="padding:48px 0;text-align:center">暂无已接收待排期记录</div>';
-  } else {
+
+  document.getElementById('my-modal-title').textContent = `${displayName} · 已接收待排期 · 加载中`;
+  body.innerHTML = '<div class="empty" style="padding:48px 0;text-align:center">加载中…</div>';
+  document.getElementById('my-modal-overlay').classList.add('open');
+
+  try {
+    const all = await fetchAcceptedFromSheet();
+    const mine = all.filter(r => r.submitter === submitter);
+    document.getElementById('my-modal-title').textContent = `${displayName} · 已接收待排期 · ${mine.length} 条`;
+
+    if (!mine.length) {
+      body.innerHTML = '<div class="empty" style="padding:48px 0;text-align:center">暂无已接收待排期记录</div>';
+      return;
+    }
+
     const dateVal = d => { if(!d)return 0; const m=d.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/); return m?+m[1]*10000+ +m[2]*100+ +m[3]:0; };
-    const sorted = [...data].sort((a,b) => dateVal(a.expectDate) - dateVal(b.expectDate));
+    mine.sort((a,b) => dateVal(a.expected) - dateVal(b.expected));
+
     body.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
       <thead><tr style="background:var(--bg)">
         <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary)">任务卡</th>
-        <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);width:90px">状态</th>
-        <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);width:110px">期望完成</th>
+        <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);width:90px">实际进度</th>
+        <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);width:120px">期望完成</th>
       </tr></thead>
-      <tbody>${sorted.map((r,i) => {
-        const t = r.task.length > 64 ? r.task.slice(0,64)+'...' : r.task;
-        const td = r.link ? `<a href="${r.link}" target="_blank" style="color:var(--primary);text-decoration:none" title="${r.task}">${t}</a>` : `<span title="${r.task}">${t}</span>`;
+      <tbody>${mine.map((r,i) => {
+        const display = r.taskName.length > 60 ? r.taskName.slice(0,60)+'...' : r.taskName;
         return `<tr style="${i%2===1?'background:var(--bg)':''}">
-          <td style="padding:8px 12px">${td}</td>
-          <td style="padding:8px 12px"><span class="badge ${STATUS_MAP[r.status]?.[0]||'status-other'}">${r.status||'—'}</span></td>
-          <td style="padding:8px 12px;color:var(--text-muted);white-space:nowrap">${r.expectDate||'—'}</td>
+          <td style="padding:8px 12px"><a href="${r.link}" target="_blank" style="color:var(--primary);text-decoration:none" title="${r.taskName}">${display}</a></td>
+          <td style="padding:8px 12px"><span class="badge ${STATUS_MAP[r.progress]?.[0]||'status-other'}">${r.progress||'—'}</span></td>
+          <td style="padding:8px 12px;color:var(--text-muted);white-space:nowrap">${r.expected||'—'}</td>
         </tr>`;
       }).join('')}</tbody>
     </table>`;
+  } catch(e) {
+    body.innerHTML = `<div class="empty" style="padding:48px 0;text-align:center;color:#ef4444">加载失败：${e.message}<br><small>请确认本地服务已启动（node local_server.mjs）</small></div>`;
   }
-  document.getElementById('my-modal-overlay').classList.add('open');
 }
 
 // ── 已上线区折叠 ──

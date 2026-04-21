@@ -4,6 +4,7 @@
  * 监听 http://localhost:3891
  */
 import { createServer } from 'http';
+import { execSync } from 'child_process';
 import { spawn } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -271,6 +272,97 @@ const server = createServer(async (req, res) => {
 
   if (req.method === 'GET' && url.pathname === '/api/groups') {
     return reply(res, { ok: true, data: STUDIO_GROUPS });
+  }
+
+  // /api/base-accepted → 从Base读取“已接收”记录（含任务名）
+  if (req.method === 'GET' && url.pathname === '/api/base-accepted') {
+    const baseToken = url.searchParams.get('baseToken') || 'I33LbfLL2aUYjVs6supcv5TLnzb';
+    const tableId = url.searchParams.get('tableId') || 'tblv1USHJKO56hrs';
+    const viewId = url.searchParams.get('viewId') || 'vewiZNSz6C';
+
+    const extractUrl = (v) => {
+      if (v == null) return '';
+      const s = String(v);
+      const m = s.match(/\((https?:\/\/[^)]+)\)/);
+      const raw = m ? m[1] : (s.match(/https?:\/\/[^\s\])]+/) || [])[0];
+      if (!raw) return '';
+      return raw.split('?')[0].split('#')[0];
+    };
+
+    const extractTaskName = (v) => {
+      if (v == null) return '';
+      const s = String(v).trim();
+      const urlIdx = s.lastIndexOf('](https://');
+      if (urlIdx > 0 && s[0] === '[') return s.substring(1, urlIdx).trim();
+      return s.replace(/\(https?:\/\/[^)]+\)/g, '').replace(/^\[+|\]+$/g, '').trim();
+    };
+
+    try {
+      let offset = 0;
+      const out = [];
+      while (true) {
+        const cmd = `lark-cli base +record-list --base-token "${baseToken}" --table-id "${tableId}" --view-id "${viewId}" --offset ${offset} --limit 200 --as user`;
+        const raw = execSync(cmd, { encoding: 'utf8' });
+        const json = JSON.parse(raw);
+        const list = json?.data?.data || [];
+
+        for (const r of list) {
+          const progress = Array.isArray(r?.[7]) ? String(r[7][0] || '').trim() : String(r?.[7] || '').trim();
+          if (progress !== '已接收') continue;
+          const link = extractUrl(r?.[1]);
+          if (!link) continue;
+          const submitter = Array.isArray(r?.[3]) && r[3][0]
+            ? (typeof r[3][0] === 'object' ? String(r[3][0].name || '').trim() : String(r[3][0]).trim())
+            : '';
+          const expectedRaw = String(r?.[5] || '').trim();
+          const dm = expectedRaw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+          const expected = dm ? `${dm[1]}/${dm[2]}/${dm[3]}` : '';
+          const taskName = extractTaskName(r?.[1]);
+
+          out.push({
+            link,
+            taskName,
+            submitter,
+            progress,
+            expected,
+            displayTask: taskName || link
+          });
+        }
+
+        if (!json?.data?.has_more) break;
+        offset += list.length;
+      }
+
+      // URL去重
+      const seen = new Set();
+      const dedup = [];
+      for (const item of out) {
+        if (seen.has(item.link)) continue;
+        seen.add(item.link);
+        dedup.push(item);
+      }
+      return reply(res, { ok: true, data: dedup });
+    } catch (e) {
+      return reply(res, { ok: false, error: e.message }, 500);
+    }
+  }
+
+  // /api/sheet-read → 读取飞书表格区间
+  if (req.method === 'GET' && url.pathname === '/api/sheet-read') {
+    const token = url.searchParams.get('token') || '';
+    const sheet = url.searchParams.get('sheet') || '';
+    const range = url.searchParams.get('range') || '';
+    if (!token || !sheet || !range) {
+      return reply(res, { ok: false, error: '缺少必要参数 token/sheet/range' }, 400);
+    }
+    try {
+      const cmd = `lark-cli sheets +read --spreadsheet-token "${token}" --sheet-id "${sheet}" --range "${range}" --as user`;
+      const out = execSync(cmd, { encoding: 'utf8' });
+      const json = JSON.parse(out);
+      return reply(res, json);
+    } catch (e) {
+      return reply(res, { ok: false, error: e.message }, 500);
+    }
   }
 
   // /api/preview  → 发给自己（预览）

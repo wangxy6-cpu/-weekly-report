@@ -146,6 +146,7 @@ let html = readFileSync(INDEX_FILE, 'utf-8');
 const syncVersion = Date.now().toString();
 const newBlock = `const ALL_DATA = ${JSON.stringify(allRecords, null, 2)};`;
 let newHtml = html.replace(/const ALL_DATA = \[[\s\S]*?\n\];/, newBlock);
+const allDataReplaced = newHtml !== html || html.includes(newBlock.slice(0, 40));
 
 // 同时更新数据版本号
 newHtml = newHtml.replace(/const DATA_VERSION = '[^']*';/, `const DATA_VERSION = '${syncVersion}';`);
@@ -159,7 +160,7 @@ newHtml = newHtml.replace(
   `$1\n            ${submitterOptions}\n          $2`
 );
 
-if (newHtml === html) {
+if (!allDataReplaced) {
   process.stderr.write('❌ 未匹配到 ALL_DATA\n'); process.exit(1);
 }
 writeFileSync(INDEX_FILE, newHtml, 'utf-8');
