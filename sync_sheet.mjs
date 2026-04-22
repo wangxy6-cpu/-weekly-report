@@ -141,6 +141,34 @@ for (const sheet of SHEETS) {
 
 process.stderr.write(`\n共 ${allRecords.length} 条记录\n`);
 
+// 读取排期表（iSkleQ）B 列提单人，补充到提单人列表
+process.stderr.write('读取排期表提单人...\n');
+const acceptedSubmitters = new Set();
+try {
+  let aStart = 3, aEmptyChunks = 0;
+  while (aStart < 20000 && aEmptyChunks < 2) {
+    const aEnd = Math.min(aStart + 199, 19999);
+    const aUrl = `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${SPREADSHEET_TOKEN}/values/iSkleQ!B${aStart}:B${aEnd}`;
+    const aResp = larkApi(aUrl);
+    const aVals = aResp?.data?.valueRange?.values || [];
+    let nonEmpty = 0;
+    for (const row of aVals) {
+      const cell = row?.[0];
+      if (!cell) continue;
+      const raw = typeof cell === 'string' ? cell.trim() : '';
+      if (raw) {
+        const name = raw.startsWith('@') ? raw.slice(1) : raw;
+        if (name) { acceptedSubmitters.add(name); nonEmpty++; }
+      }
+    }
+    aEmptyChunks = nonEmpty === 0 ? aEmptyChunks + 1 : 0;
+    aStart = aEnd + 1;
+  }
+} catch (e) {
+  process.stderr.write(`[WARN] 读取排期表提单人失败: ${e.message}\n`);
+}
+process.stderr.write(`  → 排期表提单人 ${acceptedSubmitters.size} 个\n`);
+
 // 更新 index.html
 let html = readFileSync(INDEX_FILE, 'utf-8');
 const syncVersion = Date.now().toString();
@@ -151,14 +179,32 @@ const allDataReplaced = newHtml !== html || html.includes(newBlock.slice(0, 40))
 // 同时更新数据版本号
 newHtml = newHtml.replace(/const DATA_VERSION = '[^']*';/, `const DATA_VERSION = '${syncVersion}';`);
 
-// 重建 f-submitter 下拉选项（确保包含所有提单人）
-const submitters = [...new Set(allRecords.map(r => r.submitter).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh'));
+// 重建 f-submitter 下拉选项（合并周报提单人 + 排期表提单人）
+const submitters = [...new Set([
+  ...allRecords.map(r => r.submitter).filter(Boolean),
+  ...acceptedSubmitters,
+])].sort((a, b) => a.localeCompare(b, 'zh'));
 const submitterOptions = '<option value="">全部提单人</option>' +
   submitters.map(s => `<option value="${s}">${s}</option>`).join('');
 newHtml = newHtml.replace(
   /(<select[^>]+id="f-submitter"[^>]*>)[\s\S]*?(<\/select>)/,
   `$1\n            ${submitterOptions}\n          $2`
 );
+
+// 注入 ACCEPTED_SUBMITTERS 数组（排期表提单人，供 resetUsers 合并）
+const acceptedSubList = [...acceptedSubmitters].sort((a, b) => a.localeCompare(b, 'zh'));
+const acceptedSubBlock = `const ACCEPTED_SUBMITTERS = ${JSON.stringify(acceptedSubList)};`;
+newHtml = newHtml.replace(
+  /const ACCEPTED_SUBMITTERS = \[.*?\];/,
+  acceptedSubBlock
+);
+// 如果不存在则插入到 ALL_DATA 前面
+if (!newHtml.includes('const ACCEPTED_SUBMITTERS')) {
+  newHtml = newHtml.replace(
+    /(<script>\s*\n)(const ALL_DATA)/,
+    `$1${acceptedSubBlock}\n$2`
+  );
+}
 
 if (!allDataReplaced) {
   process.stderr.write('❌ 未匹配到 ALL_DATA\n'); process.exit(1);
