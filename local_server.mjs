@@ -6,12 +6,15 @@
 import { createServer } from 'http';
 import { execSync } from 'child_process';
 import { spawn } from 'child_process';
-import { writeFileSync, unlinkSync } from 'fs';
+import { readFileSync, writeFileSync, unlinkSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = 3891;
+const CACHE_FILE = join(__dirname, '.user_cache.json');
+let USER_CACHE = {};
+try { USER_CACHE = JSON.parse(readFileSync(CACHE_FILE, 'utf8')); } catch {}
 
 // 当前用户 open_id（接收预览消息）
 const MY_OPEN_ID = 'ou_348e9babdc1075b1e4dc12dca7233662';
@@ -103,14 +106,41 @@ const SUBMITTER_OPEN_IDS = {
   '戚芳媛':        'ou_c715f5b9f80dede7dc9e07d14a8b3d63',
 };
 
-// 查找提单人 open_id：先精确匹配，再尝试 "-" 后短名兜底
+function resolveOpenId(submitter) {
+  const tryQueries = [submitter];
+  if (submitter.includes('-')) tryQueries.push(submitter.split('-').slice(1).join('-').trim());
+  const stripped = submitter.replace(/（[^）]*）|\([^)]*\)/g, '').replace(/^[\w\d]+-/, '').trim();
+  if (stripped && !tryQueries.includes(stripped)) tryQueries.push(stripped);
+
+  for (const query of tryQueries) {
+    try {
+      const out = execSync(
+        `lark-cli contact +search-user --query ${JSON.stringify(query)} --page-size 10 --as user`,
+        { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], shell: 'bash' }
+      );
+      const json = JSON.parse(out);
+      const users = json?.data?.users || [];
+      const exact = users.find(u => (u.name || '').trim() === query);
+      if (exact?.open_id) {
+        USER_CACHE[submitter] = exact.open_id;
+        writeFileSync(CACHE_FILE, JSON.stringify(USER_CACHE, null, 2), 'utf8');
+        return exact.open_id;
+      }
+    } catch {}
+  }
+  return null;
+}
+
+// 查找提单人 open_id：静态映射 → 本地缓存 → "-" 后短名 → 动态查询
 function getSubmitterOpenId(submitter) {
   if (SUBMITTER_OPEN_IDS[submitter]) return SUBMITTER_OPEN_IDS[submitter];
+  if (USER_CACHE[submitter]) return USER_CACHE[submitter];
   if (submitter.includes('-')) {
     const shortName = submitter.split('-').slice(1).join('-');
     if (SUBMITTER_OPEN_IDS[shortName]) return SUBMITTER_OPEN_IDS[shortName];
+    if (USER_CACHE[shortName]) return USER_CACHE[shortName];
   }
-  return null;
+  return resolveOpenId(submitter);
 }
 
 // 状态配置（顺序即排序优先级）
