@@ -177,7 +177,7 @@ function buildCard(studioName, items, weekRange, today) {
     if (i > 0) elements.push({ tag: 'hr' });
     const openId = getSubmitterOpenId(submitter);
     const mentionText = openId
-      ? `<at id="${openId}"></at>`
+      ? `<at id=${openId}></at>`
       : `@${submitter}`;
     elements.push({ tag: 'div', text: { tag: 'lark_md', content: mentionText } });
 
