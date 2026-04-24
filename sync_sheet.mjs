@@ -211,3 +211,13 @@ if (!allDataReplaced) {
 }
 writeFileSync(INDEX_FILE, newHtml, 'utf-8');
 process.stderr.write('✅ index.html 更新完成\n');
+
+// 自动解析新提单人 open_id（写入 .user_cache.json）
+process.stderr.write('\n解析提单人 open_id...\n');
+try {
+  execSync(`node "${path.join(__dirname, 'resolve_users.mjs')}"`, {
+    stdio: 'inherit', shell: true,
+  });
+} catch (e) {
+  process.stderr.write(`[WARN] resolve_users 失败：${e.message}\n`);
+}

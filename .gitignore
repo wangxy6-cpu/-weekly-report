@@ -1,0 +1,13 @@
+# 本地员工身份缓存，含 open_id，不要提交
+.user_cache.json
+resolve_users.mjs
+send_weekly.mjs
+
+# 调试 / 临时文件
+tmp_debug*.json
+auto_sync.log
+auto_sync.ps1
+
+# 非部署产物
+cli/
+generate.py
